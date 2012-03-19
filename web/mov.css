@@ -1,0 +1,106 @@
+﻿body
+{
+    margin: 0px;
+    padding: 0px;
+    background-color: #222222;
+    width: 100%;
+}
+
+input[type=text]
+{
+	padding: 10px 0px;
+	width: auto;
+	margin: 5px;
+}
+
+#container
+{
+    position: relative;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 1000px;
+    overflow-x: hidden;
+	background-image: url('blue_gradient.png');
+	background-position: 1px 1px;
+	background-size: 1px 85px;
+	background-repeat: repeat-x;
+}
+
+#menu
+{
+	color: #FFFFFF;
+	background-color: #00A7E2;
+	font-family: Arial;
+	font-weight: bold;
+	width: 100%;
+	overflow: hidden;
+	-webkit-transition: all .2s ease-in-out;
+}
+    #menu ul
+    {
+        margin: 0px;
+        padding: 0px;
+    }
+    #menu li
+    {
+        margin: 5px;
+		width: 90px;
+        padding: 0px;
+        list-style: none;
+		text-align: center;
+        float: left;
+        color: #FFFFFF;
+    }
+
+#contentWrapper
+{
+    width: 400%;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    -webkit-transition: all .2s ease-in-out;
+}
+    .content
+    {
+        float: left;
+        width: 25%;
+		height: 1000px;
+    }
+
+.header
+{
+    color: #ffffff;
+    font-family: Arial;
+    width: 100%;
+    border-bottom: 1px solid #00A7E2;
+    overflow: hidden;
+}
+    .header p
+    {
+        margin: 20px 10px 20px 10px;
+        padding: 0px;
+    }
+
+.slider
+{
+    display: none;
+    background-color: #0085D3;
+    color: #FFFFFF;
+    width: 100%;
+    margin: auto;
+}
+    .sliderList
+    {
+        margin: 0px 0px 0px 0px;
+        padding: 0px;
+        list-style: none;
+    }
+    .sliderList li
+    {
+	font-family: Arial;
+        padding: 20px 0px 20px 6px;
+        border-bottom: 1px solid #00A7E2;
+    }
+    
+    
