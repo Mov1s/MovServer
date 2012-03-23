@@ -57,7 +57,7 @@ def getPendingMovies(conn):
 	cursor.execute("SELECT * FROM MovieFiles WHERE FileStates_id = 0")
 	if cursor.rowcount == 0:
 		return None
-	else
+	else:
 		return cursor.fetchall()
 
 def approveMovie(conn, movieId, titleId):
