@@ -65,7 +65,7 @@ def showFirstRun(step=0, systemConf = None):
 				if showFirstRun(1, systemConf):
 					return True
 			else:
-				if showFirstRun(2, systemConf):
+				if showFirstRun(10, systemConf):	#Skip web setup and just jump to finalize
 					return True
 		return False
 	elif step == 2:		#Apache web directories
@@ -105,8 +105,11 @@ def showFirstRun(step=0, systemConf = None):
 				if showFirstRun(2, systemConf):
 					return True
 			else:
-				systemConf.writeSettingsToFile()
-				print 'Successful first run, settings written'
-				return True		
+				if showFirstRun(10, systemConf):
+					return True
 	
 		return False
+	elif step == 10:	#Finalize and write settings
+		systemConf.writeSettingsToFile()
+		print 'Successful first run, settings written'
+		return True	

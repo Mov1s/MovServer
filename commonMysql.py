@@ -1,5 +1,11 @@
 import MySQLdb as mdb
 
+#Create connection object
+def createConnection():
+	systemConf = commonSettings.systemSettings()
+	conn = mdb.connect(systemConf.mysqlServer, systemConf.mysqlUser, systemConf.mysqlPassword, 'movServer')
+	return conn
+
 #TV db functions
 def addSeriesAlias(conn, seriesId, newName):
 	cursor = conn.cursor()
@@ -45,6 +51,14 @@ def getMovie(conn, path):
 		return None
 	else:
 		return cursor.fetchall()[0]
+
+def getPendingMovies(conn):
+	cursor = conn.cursor()
+	cursor.execute("SELECT * FROM MovieFiles WHERE FileStates_id = 0")
+	if cursor.rowcount == 0:
+		return None
+	else
+		return cursor.fetchall()
 
 def approveMovie(conn, movieId, titleId):
 	cursor = conn.cursor()
