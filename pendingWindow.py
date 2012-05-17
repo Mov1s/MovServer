@@ -45,195 +45,121 @@ class tabMovies():
 		conn = commonMysql.createConnection()	
 		pendingMovies = commonMysql.getPendingMovies(conn)
 
-		table = gtk.Table(7, 2, False)
-		tabLabel = gtk.Label("Scheduling")
+		table = gtk.Table(2, 2, False)
+		tabLabel = gtk.Label("Pending Movies")
 
-		#Options for scanning for new torrents
-		self._checkScan = gtk.CheckButton("Scan Torrents", False)			#Checkbox for enable/disable scanning
-		self._checkScan.connect("toggled", self.scanToggle, None)
-		labelScanInterval = gtk.Label("Scan Interval (min):")				#Label for the interval text box
-		labelScanInterval.set_alignment(0, .5)
-		self._entryScanInterval = gtk.Entry(0)						#Text box for entering the scan interval
-		self._entryScanInterval.set_sensitive(False)
-		table.attach(self._checkScan, 0, 1, 0, 1, gtk.FILL, gtk.FILL, 1, 1)
-		table.attach(labelScanInterval, 0, 1, 1, 2, gtk.FILL, gtk.FILL, 1, 1)
-		table.attach(self._entryScanInterval, 1, 2, 1, 2, gtk.FILL|gtk.EXPAND, False, 1, 1)
-		self._checkScan.show()
-		labelScanInterval.show()
-		self._entryScanInterval.show()
+		#Left pane for showing all pending movies
+		labelLeftPane = gtk.Label("Pending Items")
+		labelLeftPane.set_alignment(0, .5)
+		scrollLeftPane = gtk.ScrolledWindow()
+		sb = scrollLeftPane.get_hscrollbar()
+		sb.set_child_visible(False)
+		listLeftPane = gtk.List()
+		scrollLeftPane.add_with_viewport(listLeftPane)
+		table.attach(labelLeftPane, 0, 1, 0, 1, gtk.FILL, gtk.FILL, 1, 1)
+		table.attach(scrollLeftPane, 0, 1, 1, 2, gtk.FILL|gtk.EXPAND, gtk.FILL|gtk.EXPAND, 1, 1)
+		labelLeftPane.show()
+		scrollLeftPane.show()
+		listLeftPane.show()
 
-		#Options for generating XBMC backdrops
-		self._checkBackdrops = gtk.CheckButton("Generate XBMC Backdrops", False)		#Checkbox for enable/disable generating picture backdrops
-		self._checkBackdrops.connect("toggled", self.backdropsToggle, None)
-		labelBackdropsInterval = gtk.Label("Generate Interval (days):")				#Label for the interval text box
-		labelBackdropsInterval.set_alignment(0, .5)
-		self._entryBackdropsInterval = gtk.Entry(0)						#Text box for entering the generating interval
-		self._entryBackdropsInterval.set_sensitive(False)
-		table.attach(self._checkBackdrops, 0, 1, 2, 3, gtk.FILL, gtk.FILL, 1, 1)
-		table.attach(labelBackdropsInterval, 0, 1, 3, 4, gtk.FILL, gtk.FILL, 1, 1)
-		table.attach(self._entryBackdropsInterval, 1, 2, 3, 4, gtk.FILL|gtk.EXPAND, False, 1, 1)
-		self._checkBackdrops.show()
-		labelBackdropsInterval.show()
-		self._entryBackdropsInterval.show()
+		listLeftPane.connect("selection_changed", self.selectMovie)
 
-		#Options for gathering server info
-		self._checkGather = gtk.CheckButton("Gather Server Info", False)			#Checkbox for enable/disable gathering server information
-		self._checkGather.connect("toggled", self.gatherToggle, None)
-		labelGatherInterval = gtk.Label("Gather Interval (hours):")				#Label for the interval text box
-		labelGatherInterval.set_alignment(0, .5)
-		self._entryGatherInterval = gtk.Entry(0)						#Text box for entering the gathering interval
-		self._entryGatherInterval.set_sensitive(False)
-		labelGatherDrives = gtk.Label("Drives to Probe:")				#Label for the drives text box
-		labelGatherDrives.set_alignment(0, .5)
-		self._entryGatherDrives = gtk.Entry(0)						#Text box for entering the drives to probe
-		self._entryGatherDrives.set_sensitive(False)
-		table.attach(self._checkGather, 0, 1, 4, 5, gtk.FILL, gtk.FILL, 1, 1)
-		table.attach(labelGatherInterval, 0, 1, 5, 6, gtk.FILL, gtk.FILL, 1, 1)
-		table.attach(self._entryGatherInterval, 1, 2, 5, 6, gtk.FILL|gtk.EXPAND, False, 1, 1)
-		table.attach(labelGatherDrives, 0, 1, 6, 7, gtk.FILL, gtk.FILL, 1, 1)
-		table.attach(self._entryGatherDrives, 1, 2, 6, 7, gtk.FILL|gtk.EXPAND, False, 1, 1)
-		self._checkGather.show()
-		labelGatherInterval.show()
-		labelGatherDrives.show()
-		self._entryGatherDrives.show()
-		self._entryGatherInterval.show()
+		#self._entryScanInterval = gtk.Entry(0)						#Text box for entering the scan interval
+		#self._entryScanInterval.set_sensitive(False)
 
-		self.readSettings()
+		#Right pane for showing all possible movie titles
+		labelRightPane = gtk.Label("Possible Titles")
+		labelRightPane.set_alignment(0, .5)
+		scrollRightPane = gtk.ScrolledWindow()
+		sb = scrollRightPane.get_hscrollbar()
+		sb.set_child_visible(False)
+		listRightPane = gtk.List()
+		scrollRightPane.add_with_viewport(listRightPane)
+		table.attach(labelRightPane, 1, 2, 0, 1, gtk.FILL, gtk.FILL, 1, 1)
+		table.attach(scrollRightPane, 1, 2, 1, 2, gtk.FILL|gtk.EXPAND, gtk.FILL|gtk.EXPAND, 1, 1)
+		labelRightPane.show()
+		scrollRightPane.show()
+		listRightPane.show()
+
+		listRightPane.connect("selection_changed", self.selectTitle)
+
+		#Add items to list
+		itemLabel = gtk.Label("Item 1")
+		item = gtk.ListItem()
+		item.add(itemLabel)
+		itemLabel.show()
+
+		listLeftPane.add(item)
+		item.show()
+		
 		table.show()
 
 		buttonDone.connect("clicked", self.buttonClickDone, None)
 		notebook.append_page(table, tabLabel)
 
 	def buttonClickDone(self, widget, data=None):
-		self.writeSettings()
+		print "Clicked the done"
 
-	def scanToggle(self, widget, data):
-		if self._checkScan.get_active() == False:		#Check box not checked so disable text entry
-			self._entryScanInterval.set_sensitive(False)
-		else:
-			self._entryScanInterval.set_sensitive(True)
+	def selectMovie(self, gtklist, data = None):
+		print data
 
-	def backdropsToggle(self, widget, data):
-		if self._checkBackdrops.get_active() == False:		#Check box not checked so disable text entry
-			self._entryBackdropsInterval.set_sensitive(False)
-		else:
-			self._entryBackdropsInterval.set_sensitive(True)
+	def selectTitle(self, gtklist, data = None):
+		print data
 	
-	def gatherToggle(self, widget, data):
-		if self._checkGather.get_active() == False:		#Check box not checked so disable text entry
-			self._entryGatherInterval.set_sensitive(False)
-			self._entryGatherDrives.set_sensitive(False)
-		else:
-			self._entryGatherInterval.set_sensitive(True)
-			self._entryGatherDrives.set_sensitive(True)
-
-	def readSettings(self):
-		if self._settings.scanInterval != None:
-			self._entryScanInterval.set_text(self._settings.scanInterval)
-			self._checkScan.set_active(True)
-			self._entryScanInterval.set_sensitive(True)
-		if self._settings.generateBackdropsInterval != None:
-			self._entryBackdropsInterval.set_text(self._settings.generateBackdropsInterval)
-			self._checkBackdrops.set_active(True)
-			self._entryBackdropsInterval.set_sensitive(True)
-		if self._settings.gatherServerInfoInterval != None:
-			self._entryGatherInterval.set_text(self._settings.gatherServerInfoInterval)
-			self._checkGather.set_active(True)
-			self._entryGatherInterval.set_sensitive(True)
-			self._entryGatherDrives.set_sensitive(True)
-
-	def writeSettings(self):
-		if self._checkScan.get_active() == True and self._entryScanInterval.get_text() != '':
-			self._settings.scanInterval = self._entryScanInterval.get_text()
-		else:
-			self._settings.scanInterval = None
-
-		if self._checkBackdrops.get_active() == True and self._entryBackdropsInterval.get_text() != '':
-			self._settings.generateBackdropsInterval = self._entryBackdropsInterval.get_text()
-		else:
-			self._settings.generateBackdropsInterval = None
-
-		if self._checkGather.get_active() == True and self._entryGatherInterval.get_text() != '':
-			self._settings.gatherServerInfoInterval = self._entryGatherInterval.get_text()
-		else:
-			self._settings.gatherServerInfoInterval = None
-
-		self._settings.writeSettingsToFile()
-
-class tabSettings():	
+class tabTv():	
 	def __init__(self, notebook, buttonDone):
-		self._settings = commonSettings.directorySettings()
+		conn = commonMysql.createConnection()
+		pendingSeries = commonMysql.getPendingTvSeries(conn)
 
-		table = gtk.Table(5, 2, False)
-		tabLabel = gtk.Label("Directory Settings")
+		table = gtk.Table(3, 1, False)
+		tabLabel = gtk.Label("Pending Tv Series")
 
-		#Content for the "Torrent Directory"
-		labelContent = gtk.Label("Torrent Source Directory:")
-		labelContent.set_alignment(0, .5)
-		self._entryContent = gtk.Entry(0)
-		table.attach(labelContent, 0, 1, 0, 1, gtk.FILL, gtk.FILL, 1, 1)
-		table.attach(self._entryContent, 1, 2, 0, 1, gtk.FILL|gtk.EXPAND, False, 1, 1)
-		labelContent.show()
-		self._entryContent.show()
+		#Pane for showing all pending series
+		labelPane = gtk.Label("Pending Items")
+		labelPane.set_alignment(0, .5)
+		scrollPane = gtk.ScrolledWindow()
+		sb = scrollPane.get_hscrollbar()
+		sb.set_child_visible(False)
+		self.listPane = gtk.List()
+		scrollPane.add_with_viewport(self.listPane)
+		table.attach(labelPane, 0, 1, 0, 1, gtk.FILL, gtk.FILL, 1, 1)
+		table.attach(scrollPane, 0, 1, 1, 2, gtk.FILL|gtk.EXPAND, gtk.FILL|gtk.EXPAND, 1, 1)
+		labelPane.show()
+		scrollPane.show()
+		self.listPane.show()
 
-		#Content for the "Movies Directory"
-		labelMovies = gtk.Label("Movies Destination Directory:")
-		labelMovies.set_alignment(0, .5)
-		self._entryMovies = gtk.Entry(0)
-		table.attach(labelMovies, 0, 1, 1, 2, gtk.FILL, gtk.FILL, 1, 1)
-		table.attach(self._entryMovies, 1, 2, 1, 2, gtk.FILL|gtk.EXPAND, False, 1, 1)
-		labelMovies.show()
-		self._entryMovies.show()
+		#Buttons for approve and ignore
+		hbox = gtk.HBox(False, 2)
+		
+		buttonApprove = gtk.Button("Approve")
+		buttonIgnore = gtk.Button("Ignore")
+		buttonApprove.connect("clicked", self.buttonClickApprove, None)
 
-		#Content for the "TV Directory"
-		labelTv = gtk.Label("TV Destination Directory:")
-		labelTv.set_alignment(0, .5)
-		self._entryTv = gtk.Entry(0)
-		table.attach(labelTv, 0, 1, 2, 3, gtk.FILL, gtk.FILL, 1, 1)
-		table.attach(self._entryTv, 1, 2, 2, 3, gtk.FILL|gtk.EXPAND, False, 1, 1)
-		labelTv.show()
-		self._entryTv.show()
+		hbox.pack_start(buttonApprove, False, False, 2)
+		hbox.pack_start(buttonIgnore, False, False, 2)
+		buttonApprove.show()
+		buttonIgnore.show()
+		table.attach(hbox, 0, 1, 2, 3, gtk.FILL, False, 1, 1)
+		hbox.show()
 
-		#Content for the "Picture Source Directory"
-		labelPicture = gtk.Label("Picture Source Directory:")
-		labelPicture.set_alignment(0, .5)
-		self._entryPicture = gtk.Entry(0)
-		table.attach(labelPicture, 0, 1, 3, 4, gtk.FILL, gtk.FILL, 1, 1)
-		table.attach(self._entryPicture, 1, 2, 3, 4, gtk.FILL|gtk.EXPAND, False, 1, 1)
-		labelPicture.show()
-		self._entryPicture.show()
+		#Add items to list
+		for series in pendingSeries:
+			item = gtk.ListItem(series[1])
+			self.listPane.add(item)
+			item.show()
+			item.set_data("seriesId", series[0])
 
-		#Content for the "XBMC Backdrop Directory"
-		labelBackdrop = gtk.Label("XBMC Backdrop Directory:")
-		labelBackdrop.set_alignment(0, .5)
-		self._entryBackdrop = gtk.Entry(0)
-		table.attach(labelBackdrop, 0, 1, 4, 5, gtk.FILL, gtk.FILL, 1, 1)
-		table.attach(self._entryBackdrop, 1, 2, 4, 5, gtk.FILL|gtk.EXPAND, False, 1, 1)
-		labelBackdrop.show()
-		self._entryBackdrop.show()
-
-		self.readSettings()
 		table.show()
+		
 		buttonDone.connect("clicked", self.buttonClickDone, None)
 		notebook.append_page(table, tabLabel)
 
 	def buttonClickDone(self, widget, data=None):
-		self.writeSettings()
+		print "Do"
 
-	def readSettings(self):		
-		self._entryContent.set_text(self._settings.contentSource)
-		self._entryMovies.set_text(self._settings.movieDestination)
-		self._entryTv.set_text(self._settings.tvDestination)
-		self._entryPicture.set_text(self._settings.pictureSource)
-		self._entryBackdrop.set_text(self._settings.backdropDestination)
-
-	def writeSettings(self):
-		self._settings.contentSource = self._entryContent.get_text()
-		self._settings.movieDestination = self._entryMovies.get_text()
-		self._settings.tvDestination = self._entryTv.get_text()
-		self._settings.pictureSource = self._entryPicture.get_text()
-		self._settings.backdropDestination = self._entryBackdrop.get_text()
-		self._settings.writeSettingsToFile()
+	def buttonClickApprove(self, widget, data=None):
+		selectedItem = self.listPane.get_selection()
+		print selectedItem.get_data("seriesId")
 
 def main():
 	masterWindow = gtk.Window(gtk.WINDOW_TOPLEVEL)

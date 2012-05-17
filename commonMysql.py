@@ -1,4 +1,5 @@
 import MySQLdb as mdb
+import commonSettings
 
 #Create connection object
 def createConnection():
@@ -24,7 +25,15 @@ def getTvSeries(conn, series):
 		return None
 	else:
 		return cursor.fetchall()[0]
-	
+
+def getPendingTvSeries(conn):
+	cursor = conn.cursor()
+	cursor.execute("SELECT * FROM TvSeries WHERE FileStates_id = 0")
+	if cursor.rowcount == 0:
+		return None
+	else:
+		return cursor.fetchall()
+
 #Movie db functions	
 def addPendingMovie(conn, path):
 	cursor = conn.cursor()
