@@ -83,5 +83,5 @@ def ignoreMovie(conn, movieId):
 
 def finalizeMovie(conn, movieId):
 	cursor = conn.cursor()
-	cursor.execute("UPDATE MovieFiles SET FileStates_id = 2 WHERE id = %d", (movieId))
+	cursor.execute("UPDATE MovieFiles SET FileStates_id = 2 WHERE id = %s", (movieId))
 	conn.commit()
