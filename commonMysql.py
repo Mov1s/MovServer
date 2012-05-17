@@ -48,7 +48,7 @@ def addImdbTitle(conn, title, movieId):
 	cursor = conn.cursor()
 	try:	
 		t = conn.escape_string(title)
-		cursor.execute("INSERT INTO MovieTitles (MovieFiles_id, title)	VALUES (%d, %s)", (movieId, t))
+		cursor.execute("INSERT INTO MovieTitles (MovieFiles_id, title)	VALUES (%s, %s)", (movieId, t))
 		conn.commit()
 	except UnicodeEncodeError:
 		print "Unicode error"
