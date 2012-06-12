@@ -18,9 +18,9 @@ def resetTables(settings):
 		conn = mdb.connect(settings.mysqlServer, settings.mysqlUser, settings.mysqlPassword, 'movServer')
 		cursor = conn.cursor()
 		cursor.execute('DROP TABLE IF EXISTS TvSeries')
-		cursor.execute('DROP TABLE IF EXISTS FileStates')
-		cursor.execute('DROP TABLE IF EXISTS MovieFiles')
-		cursor.execute('DROP TABLE IF EXISTS MovieTitles')
+		cursor.execute('DROP TABLE IF EXISTS StatusCodes')
+		cursor.execute('DROP TABLE IF EXISTS MediaFiles')
+		cursor.execute('DROP TABLE IF EXISTS Movies')
 		conn.close()
 	except:
 		return False
@@ -33,39 +33,46 @@ def createTables(settings):
 		cursor.execute('''
 			CREATE TABLE IF NOT EXISTS TvSeries
 			(
-				id		INT NOT NULL AUTO_INCREMENT,
-				series		VARCHAR(1000) NOT NULL,
-				alias		VARCHAR(1000),
-				FileStates_id	INT NOT NULL,
-				PRIMARY KEY (id)
+				id					INT NOT NULL AUTO_INCREMENT,
+				series				VARCHAR(1000) NOT NULL,
+				alias				VARCHAR(1000),
+				FileStates_id		INT NOT NULL,
+				PRIMARY KEY 		(id)
 			)''')
 		cursor.execute('''
-			CREATE TABLE IF NOT EXISTS FileStates
+			CREATE TABLE IF NOT EXISTS StatusCodes
 			(
-				id		INT NOT NULL AUTO_INCREMENT,
-				state		VARCHAR(50),
-				PRIMARY KEY (id)
+				id					INT NOT NULL AUTO_INCREMENT,
+				name				VARCHAR(50),
+				PRIMARY KEY 		(id)
 			)''')
 		cursor.execute('''
-			CREATE TABLE IF NOT EXISTS MovieFiles
+			CREATE TABLE IF NOT EXISTS MediaFiles
 			(
-				id		INT NOT NULL AUTO_INCREMENT,
-				path		VARCHAR(1000) NOT NULL,
-				FileStates_id	INT NOT NULL,
-				PRIMARY KEY (id)
+				id					INT NOT NULL AUTO_INCREMENT,
+				path				VARCHAR(1000) NOT NULL,
+				FK_status_code_id	INT NOT NULL,
+				PRIMARY KEY 		(id)
 			)''')
 		cursor.execute('''
-			CREATE TABLE IF NOT EXISTS MovieTitles
+			CREATE TABLE IF NOT EXISTS Movies
 			(
-				id		INT NOT NULL AUTO_INCREMENT,
-				MovieFiles_id	INT NOT NULL,
-				title		VARCHAR(1000),
-				PRIMARY KEY (id)
+				id					INT NOT NULL AUTO_INCREMENT,
+				teh_id				VARCHAR(10),
+				title				VARCHAR(1000) NOT NULL,
+				year				VARCHAR(4),
+				posterUrl			VARCHAR(1000),
+				summary				VARCHAR(1000),
+				rating				VARCHAR(5),
+				FK_status_code_id	INT NOT NULL,
+				FK_media_file_id	INT,
+				PRIMARY KEY 		(id)
 			)''')
 		conn.close()
 	except:
 		return False
 	return True
+
 #Do first time setup
 def firstRun(settings):
 	db = createDatabase(settings)

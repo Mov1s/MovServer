@@ -34,7 +34,7 @@ def main():
 								print fullPath
 								print moviePath
 								os.link(fullPath, moviePath)
-							finalizeMovie(conn, movieRow[0])
+							finalizeMovie(conn, movieRow[0], movieRow[3])
 				else:
 					seriesRow = getTvSeries(conn, tvShowInfo[0])
 					if seriesRow == None:

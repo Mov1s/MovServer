@@ -17,7 +17,7 @@ def addPendingSeries(conn, series):
 	cursor = conn.cursor()
 	cursor.execute("INSERT INTO TvSeries (series, FileStates_id) VALUES (%s, 0)", (series))
 	conn.commit()
-	
+
 def getTvSeries(conn, series):
 	cursor = conn.cursor()
 	cursor.execute("SELECT * FROM TvSeries WHERE series = %s", (series))
@@ -34,28 +34,36 @@ def getPendingTvSeries(conn):
 	else:
 		return cursor.fetchall()
 
-#Movie db functions	
+#Movie db functions
 def addPendingMovie(conn, path):
 	cursor = conn.cursor()
-	cursor.execute("INSERT INTO MovieFiles (path, FileStates_id) VALUES (%s, 0)", (path))
+	cursor.execute("INSERT INTO MediaFiles (path, FK_status_code_id) VALUES (%s, 0)", (path))
 	conn.commit()
-	cursor.execute("SELECT id FROM MovieFiles WHERE path = %s", (path))
+	cursor.execute("SELECT id FROM MediaFiles WHERE path = %s", (path))
 	result = cursor.fetchall()
 	result = result[0][0]
 	return result
 
-def addImdbTitle(conn, title, movieId):
+def addImdbTitle(conn, title, mediaFileId):
 	cursor = conn.cursor()
-	try:	
+	try:
 		t = conn.escape_string(title)
-		cursor.execute("INSERT INTO MovieTitles (MovieFiles_id, title)	VALUES (%s, %s)", (movieId, t))
+		cursor.execute("INSERT INTO Movies (FK_media_file_id, FK_status_code_id, title) VALUES (%s, 0, %s)", (mediaFileId, t))
 		conn.commit()
 	except UnicodeEncodeError:
 		print "Unicode error"
 
 def getMovie(conn, path):
 	cursor = conn.cursor()
-	cursor.execute("SELECT * FROM MovieFiles mf LEFT JOIN MovieTitles mt ON mf.id = mt.MovieFiles_id WHERE mf.path = %s", (path))
+	cursor.execute("SELECT * FROM MediaFiles mf LEFT JOIN Movies m ON mf.id = m.FK_media_file_id WHERE mf.path = %s", (path))
+	if cursor.rowcount == 0:
+		return None
+	else:
+		return cursor.fetchall()[0]
+
+def getMovieTitle(conn, movieId):
+	cursor = conn.cursor()
+	cursor.execute("SELECT * FROM Movies WHERE id = %s", (movieId))
 	if cursor.rowcount == 0:
 		return None
 	else:
@@ -63,25 +71,14 @@ def getMovie(conn, path):
 
 def getPendingMovies(conn):
 	cursor = conn.cursor()
-	cursor.execute("SELECT * FROM MovieFiles WHERE FileStates_id = 0")
+	cursor.execute("SELECT * FROM MediaFiles WHERE FK_status_code_id = 0")
 	if cursor.rowcount == 0:
 		return None
 	else:
 		return cursor.fetchall()
 
-def approveMovie(conn, movieId, titleId):
+def finalizeMovie(conn, mediaFileId, movieId):
 	cursor = conn.cursor()
-	cursor.execute("UPDATE MovieFiles SET FileStates_id = 1 WHERE id = %s", (movieId))
-	cursor.execute("DELETE FROM MovieTitles WHERE MovieFiles_id = %s AND id != %s", (movieId, titleId))
-	conn.commit()
-
-def ignoreMovie(conn, movieId):
-	cursor = conn.cursor()
-	cursor.execute("UPDATE MovieFiles SET FileStates_id = 3 WHERE id = %s", (movieId))
-	cursor.execute("DELETE FROM MovieTitles WHERE MovieFiles_id = %s", (movieId))
-	conn.commit()
-
-def finalizeMovie(conn, movieId):
-	cursor = conn.cursor()
-	cursor.execute("UPDATE MovieFiles SET FileStates_id = 2 WHERE id = %s", (movieId))
+	cursor.execute("UPDATE MediaFiles SET FK_status_code_id = 2 WHERE id = %s", (mediaFileId))
+	cursor.execute("UPDATE Moviess SET FK_status_code_id = 2, FK_media_file_id = %s WHERE id = %s", (mediaFileId, movieId))
 	conn.commit()
