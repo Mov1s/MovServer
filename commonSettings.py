@@ -7,6 +7,8 @@ class directorySettings():
 	movieDestination = ''
 	tvDestination = ''
 	contentSource = ''
+	crawlerTorrentSource = ''
+	torrentWatchDirectory = ''
 
 	def __init__(self):
 		self.readSettingsFromFile()
@@ -33,6 +35,12 @@ class directorySettings():
 
 			line = f.readline().split('=')
 			self.backdropDestination = line[1].replace('\n', '').strip() if len(line) == 2 else ''
+
+			line = f.readline().split('=')
+			self.crawlerTorrentSource = line[1].replace('\n', '').strip() if len(line) == 2 else ''
+
+			line = f.readline().split('=')
+			self.torrentWatchDirectory = line[1].replace('\n', '').strip() if len(line) == 2 else ''
 			f.close()
 	
 	#Write all the settings to 'directorySettings.conf'
@@ -48,6 +56,8 @@ class directorySettings():
 		f.write('tvDestination=' + self.tvDestination + '\n')
 		f.write('pictureSource=' + self.pictureSource + '\n')
 		f.write('backdropDestination=' + self.backdropDestination + '\n')
+		f.write('crawlerTorrentSource=' + self.crawlerTorrentSource + '\n')
+		f.write('torrentWatchDirectory=' + self.torrentWatchDirectory + '\n')
 		f.close()
 
 #Class for holding system settings like mysql options or web directories

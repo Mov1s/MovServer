@@ -1,11 +1,15 @@
 import os, sys, re
 import string
 import commonSettings
+import movCrawler
 from commonMysql import *
 from commonHelpers import *
 import MySQLdb as mdb
 
 def main():
+	#Import torrents from movCrawler if running
+	movCrawler.importTorrents()
+	
 	systemConf = commonSettings.systemSettings()
 	dirConf = commonSettings.directorySettings()
 

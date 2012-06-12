@@ -162,11 +162,11 @@ class tabSettings():
 	def __init__(self, notebook, buttonDone):
 		self._settings = commonSettings.directorySettings()
 
-		table = gtk.Table(5, 2, False)
+		table = gtk.Table(7, 2, False)
 		tabLabel = gtk.Label("Directory Settings")
 
-		#Content for the "Torrent Directory"
-		labelContent = gtk.Label("Torrent Source Directory:")
+		#Content for the "Completed Torrent Directory"
+		labelContent = gtk.Label("Completed Torrent Directory:")
 		labelContent.set_alignment(0, .5)
 		self._entryContent = gtk.Entry(0)
 		table.attach(labelContent, 0, 1, 0, 1, gtk.FILL, gtk.FILL, 1, 1)
@@ -210,6 +210,24 @@ class tabSettings():
 		labelBackdrop.show()
 		self._entryBackdrop.show()
 
+		#Content for the "MovCrawler Install Directory"
+		labelMovCrawler = gtk.Label("MovCrawler Install Directory:")
+		labelMovCrawler.set_alignment(0, .5)
+		self._entryMovCrawler = gtk.Entry(0)
+		table.attach(labelMovCrawler, 0, 1, 5, 6, gtk.FILL, gtk.FILL, 1, 1)
+		table.attach(self._entryMovCrawler, 1, 2, 5, 6, gtk.FILL|gtk.EXPAND, False, 1, 1)
+		labelMovCrawler.show()
+		self._entryMovCrawler.show()
+
+		#Content for the "Watch Torrent Directory"
+		labelWatch = gtk.Label("Watch Torrent Directory:")
+		labelWatch.set_alignment(0, .5)
+		self._entryWatch = gtk.Entry(0)
+		table.attach(labelWatch, 0, 1, 6, 7, gtk.FILL, gtk.FILL, 1, 1)
+		table.attach(self._entryWatch, 1, 2, 6, 7, gtk.FILL|gtk.EXPAND, False, 1, 1)
+		labelWatch.show()
+		self._entryWatch.show()
+
 		self.readSettings()
 		table.show()
 		buttonDone.connect("clicked", self.buttonClickDone, None)
@@ -224,6 +242,8 @@ class tabSettings():
 		self._entryTv.set_text(self._settings.tvDestination)
 		self._entryPicture.set_text(self._settings.pictureSource)
 		self._entryBackdrop.set_text(self._settings.backdropDestination)
+		self._entryMovCrawler.set_text(self._settings.crawlerTorrentSource)
+		self._entryWatch.set_text(self._settings.torrentWatchDirectory)
 
 	def writeSettings(self):
 		self._settings.contentSource = self._entryContent.get_text()
@@ -231,6 +251,8 @@ class tabSettings():
 		self._settings.tvDestination = self._entryTv.get_text()
 		self._settings.pictureSource = self._entryPicture.get_text()
 		self._settings.backdropDestination = self._entryBackdrop.get_text()
+		self._settings.crawlerTorrentSource = self._entryMovCrawler.get_text()
+		self._settings.torrentWatchDirectory = self._entryWatch.get_text()
 		self._settings.writeSettingsToFile()
 
 def main():
