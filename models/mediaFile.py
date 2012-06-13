@@ -1,6 +1,7 @@
 #MediaFile model
 import statusCode
-import commonSettings
+import MySQLdb as mdb
+import commonMysql
 
 class mediaFile():
 	id = None
@@ -9,19 +10,9 @@ class mediaFile():
 	#Foreign Keys
 	statusCode = None
 
-	
-
-	def __init__(self, mediaFileInfoArray):
-		self.id = movieInfoArray[0]
-		self.path = movieInfoArray[1]
-		self.statusCode = movieInfoArray[2]
-
-	def __init__(self):
-		self.id = None
-
 	def save(self, conn = None):
 		if conn == None:
-			conn = createConnection()
+			conn = commonMysql.createConnection()
 		cursor = conn.cursor()
 
 		#New Media File
@@ -39,14 +30,16 @@ class mediaFile():
 			cursor.execute("UPDATE MediaFiles SET path = %s, FK_status_code_id = %s WHERE id = %s", (self.path, self.statusCode, self.id))
 			conn.commit()
 
-		return self.id
+		return self
 
-def createConnection():
-	systemConf = commonSettings.systemSettings()
-	conn = mdb.connect(systemConf.mysqlServer, systemConf.mysqlUser, systemConf.mysqlPassword, 'movServer')
-	return conn
+def createFromArray(mediaFileInfoArray):
+	mediaFileResult = mediaFile()
+	mediaFileResult.id = mediaFileInfoArray[0]
+	mediaFileResult.path = mediaFileInfoArray[1]
+	mediaFileResult.statusCode = mediaFileInfoArray[2]
+	return mediaFileResult
 
-def createAsPending(conn, path):
+def createAsPending(path):
 	mediaFileResult = mediaFile()
 	mediaFileResult.path = path
 	mediaFileResult.statusCode = statusCode.pending

@@ -36,15 +36,6 @@ def getPendingTvSeries(conn):
 		return cursor.fetchall()
 
 #Movie db functions
-def addPendingMovie(conn, path):
-	cursor = conn.cursor()
-	cursor.execute("INSERT INTO MediaFiles (path, FK_status_code_id) VALUES (%s, 0)", (path))
-	conn.commit()
-	cursor.execute("SELECT id FROM MediaFiles WHERE path = %s", (path))
-	result = cursor.fetchall()
-	result = result[0][0]
-	return result
-
 def addImdbTitle(conn, title, mediaFileId):
 	cursor = conn.cursor()
 	try:
@@ -69,9 +60,3 @@ def getPendingMovies(conn):
 		return None
 	else:
 		return cursor.fetchall()
-
-def finalizeMovie(conn, mediaFileId, movieId):
-	cursor = conn.cursor()
-	cursor.execute("UPDATE MediaFiles SET FK_status_code_id = 2 WHERE id = %s", (mediaFileId))
-	cursor.execute("UPDATE Movies SET FK_status_code_id = 2, FK_media_file_id = %s WHERE id = %s", (mediaFileId, movieId))
-	conn.commit()

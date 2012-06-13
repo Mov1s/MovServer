@@ -7,6 +7,7 @@ from commonHelpers import *
 import MySQLdb as mdb
 import models.movie as movie
 import models.mediaFile as mediaFile
+import models.statusCode as statusCode
 
 def main():
 	#Import torrents from movCrawler if running
@@ -28,21 +29,20 @@ def main():
 					if isOfMovieSize(fullPath):
 						movieRow = movie.getByMediaFilePath(conn, fullPath)
 						if movieRow == None:
-							pendingMediaFile = mediaFile.createAsPending(conn, fullPath)
-							mediaFileId = pendingMediaFile.save(conn)
+							pendingMediaFile = mediaFile.createAsPending(fullPath).save(conn)
 							pendingItems += 1
 							titles = findTitles(file)
 							for t in titles:
-								pendingMovie = movie.createAsPending(conn, t, mediaFileId)
-								pendingMovie.save(conn)
-						elif movieRow.mediaFile.statusCode == 1:
+								print t
+								pendingMovie = movie.createAsPending(t, pendingMediaFile).save(conn)
+						elif movieRow.associatedMediaFile.statusCode == statusCode.chosen:
 							title = movieRow.title
 							moviePath = os.path.join(dirConf.movieDestination, title+appendHD(file)+appendExtension(file))
 							if not os.path.exists(moviePath):
 								print fullPath
 								print moviePath
 								os.link(fullPath, moviePath)
-							finalizeMovie(conn, movieRow.mediaFile.id, movieRow.id)
+							movieRow.finalize().save(conn)
 				else:
 					seriesRow = getTvSeries(conn, tvShowInfo[0])
 					if seriesRow == None:
