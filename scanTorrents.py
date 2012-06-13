@@ -5,11 +5,13 @@ import movCrawler
 from commonMysql import *
 from commonHelpers import *
 import MySQLdb as mdb
+import models.movie as movie
+import models.mediaFile as mediaFile
 
 def main():
 	#Import torrents from movCrawler if running
-	movCrawler.importTorrents()
-	
+	#movCrawler.importTorrents()
+
 	systemConf = commonSettings.systemSettings()
 	dirConf = commonSettings.directorySettings()
 
@@ -24,21 +26,23 @@ def main():
 				tvShowInfo = getSeries(file)
 				if tvShowInfo == None:
 					if isOfMovieSize(fullPath):
-						movieRow = getMovie(conn, fullPath)
+						movieRow = movie.getByMediaFilePath(conn, fullPath)
 						if movieRow == None:
-							movieId = addPendingMovie(conn, fullPath)
+							pendingMediaFile = mediaFile.createAsPending(conn, fullPath)
+							mediaFileId = pendingMediaFile.save(conn)
 							pendingItems += 1
 							titles = findTitles(file)
 							for t in titles:
-								addImdbTitle(conn, t, movieId)
-						elif movieRow[2] == 1:
-							title = movieRow[5]
+								pendingMovie = movie.createAsPending(conn, t, mediaFileId)
+								pendingMovie.save(conn)
+						elif movieRow.mediaFile.statusCode == 1:
+							title = movieRow.title
 							moviePath = os.path.join(dirConf.movieDestination, title+appendHD(file)+appendExtension(file))
 							if not os.path.exists(moviePath):
 								print fullPath
 								print moviePath
 								os.link(fullPath, moviePath)
-							finalizeMovie(conn, movieRow[0], movieRow[3])
+							finalizeMovie(conn, movieRow.mediaFile.id, movieRow.id)
 				else:
 					seriesRow = getTvSeries(conn, tvShowInfo[0])
 					if seriesRow == None:

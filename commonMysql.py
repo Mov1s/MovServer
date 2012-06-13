@@ -1,5 +1,6 @@
 import MySQLdb as mdb
 import commonSettings
+import sys
 
 #Create connection object
 def createConnection():
@@ -53,14 +54,6 @@ def addImdbTitle(conn, title, mediaFileId):
 	except UnicodeEncodeError:
 		print "Unicode error"
 
-def getMovie(conn, path):
-	cursor = conn.cursor()
-	cursor.execute("SELECT * FROM MediaFiles mf LEFT JOIN Movies m ON mf.id = m.FK_media_file_id WHERE mf.path = %s", (path))
-	if cursor.rowcount == 0:
-		return None
-	else:
-		return cursor.fetchall()[0]
-
 def getMovieTitle(conn, movieId):
 	cursor = conn.cursor()
 	cursor.execute("SELECT * FROM Movies WHERE id = %s", (movieId))
@@ -80,5 +73,5 @@ def getPendingMovies(conn):
 def finalizeMovie(conn, mediaFileId, movieId):
 	cursor = conn.cursor()
 	cursor.execute("UPDATE MediaFiles SET FK_status_code_id = 2 WHERE id = %s", (mediaFileId))
-	cursor.execute("UPDATE Moviess SET FK_status_code_id = 2, FK_media_file_id = %s WHERE id = %s", (mediaFileId, movieId))
+	cursor.execute("UPDATE Movies SET FK_status_code_id = 2, FK_media_file_id = %s WHERE id = %s", (mediaFileId, movieId))
 	conn.commit()
