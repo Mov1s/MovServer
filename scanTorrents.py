@@ -33,7 +33,6 @@ def main():
 							pendingItems += 1
 							titles = findTitles(file)
 							for t in titles:
-								print t
 								pendingMovie = movie.createAsPending(t, pendingMediaFile).save(conn)
 						elif movieRow.associatedMediaFile.statusCode == statusCode.chosen:
 							title = movieRow.title

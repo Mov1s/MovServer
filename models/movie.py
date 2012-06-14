@@ -49,8 +49,16 @@ class movie():
 		self.associatedMediaFile.statusCode = statusCode.finalized
 		return self
 
+	def associateMediaFile(self, mediaFile):
+		self.associatedMediaFile = mediaFile
+		self.associatedMediaFileId = mediaFile.id
+		return self
+
 def getByMediaFilePath(conn, path):
+	if conn == None:
+		conn = commonMysql.createConnection()
 	cursor = conn.cursor()
+
 	cursor.execute("SELECT * FROM MediaFiles mf LEFT JOIN Movies m ON mf.id = m.FK_media_file_id WHERE mf.path = %s", (path))
 	if cursor.rowcount == 0:
 		return None
@@ -58,6 +66,21 @@ def getByMediaFilePath(conn, path):
 		movieInfo = cursor.fetchall()[0]
 		movieResult = createFromArray(movieInfo[3:])
 		mediaResult = mediaFile.createFromArray(movieInfo[:3])
+		movieResult.associatedMediaFile = mediaResult
+		return movieResult
+
+def getByTehMovieId(conn, tehId):
+	if conn == None:
+		conn = commonMysql.createConnection()
+	cursor = conn.cursor()
+
+	cursor.execute("SELECT * FROM Movies m LEFT JOIN MediaFiles mf ON mf.id = m.FK_media_file_id WHERE m.teh_id = %s", (tehId))
+	if cursor.rowcount == 0:
+		return None
+	else:
+		movieInfo = cursor.fetchall()[0]
+		movieResult = createFromArray(movieInfo[:9])
+		mediaResult = mediaFile.createFromArray(movieInfo[9:])
 		movieResult.associatedMediaFile = mediaResult
 		return movieResult
 
