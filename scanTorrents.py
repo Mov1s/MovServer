@@ -11,7 +11,7 @@ import models.statusCode as statusCode
 
 def main():
 	#Import torrents from movCrawler if running
-	#movCrawler.importTorrents()
+	movCrawler.importTorrents()
 
 	systemConf = commonSettings.systemSettings()
 	dirConf = commonSettings.directorySettings()
@@ -27,14 +27,15 @@ def main():
 				tvShowInfo = getSeries(file)
 				if tvShowInfo == None:
 					if isOfMovieSize(fullPath):
-						movieRow = movie.getByMediaFilePath(conn, fullPath)
-						if movieRow == None:
+						movieRows = movie.getByMediaFilePath(fullPath, None)
+						if movieRows == None:
 							pendingMediaFile = mediaFile.createAsPending(fullPath).save(conn)
 							pendingItems += 1
 							titles = findTitles(file)
 							for t in titles:
 								pendingMovie = movie.createAsPending(t, pendingMediaFile).save(conn)
-						elif movieRow.associatedMediaFile.statusCode == statusCode.chosen:
+						elif movieRows[0].associatedMediaFile.statusCode == statusCode.chosen:
+							movieRow = movieRows[0]
 							title = movieRow.title
 							moviePath = os.path.join(dirConf.movieDestination, title+appendHD(file)+appendExtension(file))
 							if not os.path.exists(moviePath):

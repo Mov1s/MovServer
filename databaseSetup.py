@@ -64,7 +64,6 @@ def createTables(settings):
 				posterUrl			VARCHAR(1000),
 				summary				VARCHAR(1000),
 				rating				VARCHAR(5),
-				FK_status_code_id	INT NOT NULL,
 				FK_media_file_id	INT,
 				PRIMARY KEY 		(id)
 			)''')
