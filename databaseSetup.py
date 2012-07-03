@@ -58,7 +58,7 @@ def createTables(settings):
 			CREATE TABLE IF NOT EXISTS Movies
 			(
 				id					INT NOT NULL AUTO_INCREMENT,
-				teh_id				VARCHAR(10),
+				teh_id				INT,
 				title				VARCHAR(1000) NOT NULL,
 				year				VARCHAR(4),
 				posterUrl			VARCHAR(1000),

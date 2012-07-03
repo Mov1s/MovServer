@@ -1,0 +1,38 @@
+# Maintainer: Mov1s
+#
+# Rub-a-dub-dub
+
+pkgname=movserver
+pkgver=1
+pkgrel=1
+pkgdesc="MovServer media library manager"
+provides=('movserver')
+conflicts=()
+replaces=()
+arch=('i686' 'x86_64')
+url=""
+license=('other')
+depends=('python2' 'mysql' 'mysql-python' 'imdbpy' 'python-imaging' 'pygtk')
+makedepends=('git')
+
+optdepends=()
+sha256sums=('')
+
+_gitname='Mov1s'
+_gitroot='git://github.com/Mov1s/MovServer.git'
+
+build() {
+	git clone $_gitroot
+	
+	_installpath="${pkgdir}/usr/share/movserver"
+	_gitpath="${srcdir}/MovServer/*"
+	_binpath="${pkgdir}/usr/bin"
+
+	install -d $_installpath
+	install -D $_gitpath $_installpath
+
+	chmod 755 $_installpath/movserver
+
+	install -d $_binpath
+	ln -s /usr/share/movserver/movserver $_binpath/movserver
+}

@@ -33,11 +33,12 @@ def main():
 							pendingItems += 1
 							titles = findTitles(file)
 							for t in titles:
-								pendingMovie = movie.createAsPending(t, pendingMediaFile).save(conn)
+								t.associateMediaFile(pendingMediaFile).save(conn)
 						elif movieRows[0].associatedMediaFile.statusCode == statusCode.chosen:
 							movieRow = movieRows[0]
 							title = movieRow.title
-							moviePath = os.path.join(dirConf.movieDestination, title+appendHD(file)+appendExtension(file))
+							year = movieRow.year
+							moviePath = os.path.join(dirConf.movieDestination, title+ ' (' + year + ')' + appendHD(file)+appendExtension(file))
 							if not os.path.exists(moviePath):
 								print fullPath
 								print moviePath

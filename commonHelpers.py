@@ -4,6 +4,7 @@ import re
 import os
 import httplib
 import commonSettings
+import models.movie as movie
 
 def appendHD(word):
 	hd = ''
@@ -30,6 +31,7 @@ def isVideo(fileName):
 	return result
 
 def isOfMovieSize(fileName):
+	#return True
 	result = False
 	if os.path.getsize(fileName) >= 629145600:
 		result = True
@@ -68,20 +70,24 @@ def findTitles(fileName):
 	fileNameArray = re.findall(r'[^\s_.\[\]\(\)-]+', filteredFileName)
 	i = 0
 	titles = []
+	movies = []
 	while True:
 		results = a.search_movie(string.replace(','.join(fileNameArray[0:i+1]), ',', ' '))
 		if len(results) != 0 and i!= len(fileNameArray):
 			#print "Result set for ",string.replace(','.join(testArray[0:i+1]), ',', ' ')," is of size:",len(results)
 			#print 4*' ',results[0]['long imdb canonical title']
+			newMovie = movie.createAsPending(results[0]['title'])
+			newMovie.year = results[0]['year']
 			try:
-				titles.index('%s (%s)' % (results[0]['title'], results[0]['year']))
+				titles.index(newMovie.title)
 			except ValueError:
-				titles.append('%s (%s)' % (results[0]['title'], results[0]['year']))
+				titles.append(newMovie.title)
+				movies.append(newMovie)
 			i=i+1
 		else:
 			break
 	#print '\n','Final result for ',string.replace(','.join(testArray[0:i]), ',', ' '),' is of size:',len(results),'\n'
-	return titles
+	return movies
 
 def findTitlesRaw(fileName):
 	a = imdb.IMDb()
