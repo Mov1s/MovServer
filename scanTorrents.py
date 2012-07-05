@@ -27,8 +27,9 @@ def main():
 				tvShowInfo = getSeries(file)
 				if tvShowInfo == None:
 					if isOfMovieSize(fullPath):
-						movieRows = movie.getByMediaFilePath(fullPath, None)
+						movieRows = movie.getByMediaFilePath(fullPath, conn)
 						if movieRows == None:
+							print 'Found media file ', fullPath
 							pendingMediaFile = mediaFile.createAsPending(fullPath).save(conn)
 							pendingItems += 1
 							titles = findTitles(file)
@@ -40,8 +41,6 @@ def main():
 							year = movieRow.year
 							moviePath = os.path.join(dirConf.movieDestination, title+ ' (' + year + ')' + appendHD(file)+appendExtension(file))
 							if not os.path.exists(moviePath):
-								print fullPath
-								print moviePath
 								os.link(fullPath, moviePath)
 							movieRow.finalize().save(conn)
 				else:

@@ -49,7 +49,7 @@ def createTables(settings):
 		cursor.execute('''
 			CREATE TABLE IF NOT EXISTS MediaFiles
 			(
-				id					INT NOT NULL AUTO_INCREMENT,
+				id					BIGINT NOT NULL AUTO_INCREMENT,
 				path				VARCHAR(1000) NOT NULL,
 				FK_status_code_id	INT NOT NULL,
 				PRIMARY KEY 		(id)
@@ -57,14 +57,14 @@ def createTables(settings):
 		cursor.execute('''
 			CREATE TABLE IF NOT EXISTS Movies
 			(
-				id					INT NOT NULL AUTO_INCREMENT,
-				teh_id				INT,
+				id					BIGINT NOT NULL AUTO_INCREMENT,
+				teh_id				BIGINT,
 				title				VARCHAR(1000) NOT NULL,
 				year				VARCHAR(4),
 				posterUrl			VARCHAR(1000),
 				summary				VARCHAR(1000),
 				rating				VARCHAR(5),
-				FK_media_file_id	INT,
+				FK_media_file_id	BIGINT,
 				PRIMARY KEY 		(id)
 			)''')
 		conn.close()
