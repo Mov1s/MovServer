@@ -29,7 +29,6 @@ def main():
 					if isOfMovieSize(fullPath):
 						movieRows = movie.getByMediaFilePath(fullPath, conn)
 						if movieRows == None:
-							print 'Found media file ', fullPath
 							pendingMediaFile = mediaFile.createAsPending(fullPath).save(conn)
 							pendingItems += 1
 							titles = findTitles(file)
@@ -63,6 +62,8 @@ def main():
 						if not os.path.exists(episodePath):
 							os.link(fullPath, episodePath)
 							addedShows.append(formatedEpisode)
+		if pendingItems >= 3:
+			break
 	conn.close()
 	if pendingItems > 0:
 		sendXbmcNotification("Pending Content", str(pendingItems)+" item(s) pending approval.")

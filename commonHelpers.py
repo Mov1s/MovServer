@@ -78,6 +78,7 @@ def findTitles(fileName):
 			#print 4*' ',results[0]['long imdb canonical title']
 			newMovie = movie.createAsPending(results[0]['title'])
 			newMovie.year = results[0]['year']
+			print "Found ", newMovie.title
 			try:
 				titles.index(newMovie.title)
 			except ValueError:
