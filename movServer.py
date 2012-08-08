@@ -47,17 +47,10 @@ def main():
 	argument = grabArguments()
 	if argument == 's':
 		scanTorrents.main()
-	elif argument == 'g':
-		gatherServerInfo.main()
 	elif argument == 'b':
 		generateBackdrops.main()
 	elif argument == None:
-		if isFirstRun():
-			success = firstRun.showFirstRun()
-			if not success:
-				return
-		settingsWindow.main()
-		gtk.main()
+		scanTorrents.main()
 	else:
 		print 'There was an issue starting movServer'
 		
