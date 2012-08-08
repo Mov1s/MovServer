@@ -71,23 +71,29 @@ def findTitles(fileName):
 	i = 0
 	titles = []
 	movies = []
+	returnMovies = []
+	lastSuccessfulTitle = ''
 	while True:
 		results = a.search_movie(string.replace(','.join(fileNameArray[0:i+1]), ',', ' '))
 		if len(results) != 0 and i!= len(fileNameArray):
-			#print "Result set for ",string.replace(','.join(testArray[0:i+1]), ',', ' ')," is of size:",len(results)
-			#print 4*' ',results[0]['long imdb canonical title']
 			newMovie = movie.createAsPending(results[0]['title'])
 			newMovie.year = results[0]['year']
-			print "Found ", newMovie.title
 			try:
 				titles.index(newMovie.title)
 			except ValueError:
 				titles.append(newMovie.title)
 				movies.append(newMovie)
 			i=i+1
+			lastSuccessfulTitle = string.replace(','.join(fileNameArray[0:i+1]), ',', ' ')
 		else:
+			for aMovie in movies:
+				pMatch = percentageOfTitleMatch(aMovie, lastSuccessfulTitle)
+				returnMovies.append([pMatch, aMovie])
+			returnMovies.sort(reverse=True)
+			movies = []
+			for item in returnMovies:
+				movies.append(item[1])
 			break
-	#print '\n','Final result for ',string.replace(','.join(testArray[0:i]), ',', ' '),' is of size:',len(results),'\n'
 	return movies
 
 def findTitlesRaw(fileName):
@@ -113,3 +119,19 @@ def sendXbmcNotification(title, message):
 		conn.close()
 	except:
 		print "Had a problem sending message to XBMC"
+
+def percentageOfTitleMatch(aMovie, secondTitle):
+	firstArray = aMovie.title.lower().split()
+	secondArray = secondTitle.lower().split()
+
+	if len(firstArray) > len(secondArray):
+		tempArray = firstArray
+		firstArray = secondArray
+		secondArray = tempArray
+
+	matchingWordCount = 0
+	for word in firstArray:
+		if word in secondArray:
+			matchingWordCount += 1
+
+	return float(matchingWordCount) / len(secondArray)
