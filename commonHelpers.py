@@ -31,7 +31,7 @@ def isVideo(fileName):
 	return result
 
 def isOfMovieSize(fileName):
-	#return True
+	return True
 	result = False
 	if os.path.getsize(fileName) >= 629145600:
 		result = True

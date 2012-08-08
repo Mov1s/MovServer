@@ -1,7 +1,6 @@
 import os, sys, re
 import string
 import commonSettings
-import movCrawler
 from commonMysql import *
 from commonHelpers import *
 import MySQLdb as mdb
@@ -10,9 +9,7 @@ import models.mediaFile as mediaFile
 import models.statusCode as statusCode
 
 def main():
-	#Import torrents from movCrawler if running
-	movCrawler.importTorrents()
-
+	print "Starting Scan"
 	systemConf = commonSettings.systemSettings()
 	dirConf = commonSettings.directorySettings()
 
@@ -27,21 +24,21 @@ def main():
 				tvShowInfo = getSeries(file)
 				if tvShowInfo == None:
 					if isOfMovieSize(fullPath):
-						movieRows = movie.getByMediaFilePath(fullPath, conn)
-						if movieRows == None:
-							pendingMediaFile = mediaFile.createAsPending(fullPath).save(conn)
-							pendingItems += 1
+						retrievedMediaFile = mediaFile.getByFilePath(fullPath, conn)
+						if retrievedMediaFile == None:
+							newMediaFile = mediaFile.createWithPath(fullPath).save(conn)
 							titles = findTitles(file)
 							for t in titles:
-								t.associateMediaFile(pendingMediaFile).save(conn)
-						elif movieRows[0].associatedMediaFile.statusCode == statusCode.chosen:
-							movieRow = movieRows[0]
-							title = movieRow.title
-							year = movieRow.year
-							moviePath = os.path.join(dirConf.movieDestination, title+ ' (' + year + ')' + appendHD(file)+appendExtension(file))
-							if not os.path.exists(moviePath):
-								os.link(fullPath, moviePath)
-							movieRow.finalize().save(conn)
+								t.associateMediaFile(newMediaFile).save(conn)
+							title = titles[0].title
+							year = titles[0].year
+
+							moviePath = os.path.join(dirConf.movieDestination, title+ ' (' + str(year) + ')' + appendHD(file)+appendExtension(file))
+							
+							print "Linked " + fullPath + " to movie title \n" + " "*4 + title
+
+							#if not os.path.exists(moviePath):
+							#	os.link(fullPath, moviePath)
 				else:
 					seriesRow = getTvSeries(conn, tvShowInfo[0])
 					if seriesRow == None:
@@ -62,8 +59,6 @@ def main():
 						if not os.path.exists(episodePath):
 							os.link(fullPath, episodePath)
 							addedShows.append(formatedEpisode)
-		if pendingItems >= 3:
-			break
 	conn.close()
 	if pendingItems > 0:
 		sendXbmcNotification("Pending Content", str(pendingItems)+" item(s) pending approval.")

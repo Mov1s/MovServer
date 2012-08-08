@@ -1,11 +1,9 @@
 import sys
-import settingsWindow
-import firstRun
-import gtk
 import os
 import scanTorrents
 import generateBackdrops
-import gatherServerInfo
+import commonSettings
+import databaseSetup
 
 #Print the correct usage syntax
 def printUsage():
@@ -47,6 +45,10 @@ def main():
 	argument = grabArguments()
 	if argument == 's':
 		scanTorrents.main()
+	elif argument == 'g':
+		systemConf = commonSettings.systemSettings()
+		databaseSetup.resetTables(systemConf)
+		databaseSetup.createTables(systemConf)
 	elif argument == 'b':
 		generateBackdrops.main()
 	elif argument == None:

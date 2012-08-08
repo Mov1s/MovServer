@@ -51,7 +51,6 @@ def createTables(settings):
 			(
 				id					BIGINT NOT NULL AUTO_INCREMENT,
 				path				VARCHAR(1000) NOT NULL,
-				FK_status_code_id	INT NOT NULL,
 				PRIMARY KEY 		(id)
 			)''')
 		cursor.execute('''
