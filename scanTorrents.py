@@ -27,38 +27,56 @@ def main():
 						retrievedMediaFile = mediaFile.getByFilePath(fullPath, conn)
 						if retrievedMediaFile == None:
 							newMediaFile = mediaFile.createWithPath(fullPath).save(conn)
-							titles = findTitles(file)
+
+							f = open('titleResults.txt', 'a')
+							#Check to see if the movie is in a sub folder
+							#if so then do the search based on folder name instead of file name
+							if len(root) > len(dirConf.contentSource):
+								folderTitle = os.path.basename(root)
+								f.write("File in folder, using the folder name: " + folderTitle + " instead of file name: " + file + "\n")
+								print "File in folder, using the folder name: " + folderTitle + " instead of file name: " + file
+								titles = findTitles(folderTitle)
+							else:
+								f.write("Using the file name: " + file + "\n")
+								print "Using the file name: " + file
+								titles = findTitles(file)
+
+							#Process all the titles
 							for t in titles:
 								t.associateMediaFile(newMediaFile).save(conn)
-							title = titles[0].title
-							year = titles[0].year
+							if len(titles) > 0:
+								title = titles[0].title
+								year = titles[0].year
 
-							moviePath = os.path.join(dirConf.movieDestination, title+ ' (' + str(year) + ')' + appendHD(file)+appendExtension(file))
-							
-							print "Linked " + fullPath + " to movie title \n" + " "*4 + title
-
-							#if not os.path.exists(moviePath):
-							#	os.link(fullPath, moviePath)
-				else:
-					seriesRow = getTvSeries(conn, tvShowInfo[0])
-					if seriesRow == None:
-						addPendingSeries(conn, tvShowInfo[0])
-						pendingItems += 1
-					elif seriesRow[3] == 2:
-						series = seriesRow[2]
-						formatedEpisode = '%s - %sx%s' % (series, tvShowInfo[1], tvShowInfo[2])
-						seriesPath = os.path.join(dirConf.tvDestination, series)
-						seasonPath = os.path.join(seriesPath, 'Season '+tvShowInfo[1])
-						episodePath = os.path.join(seasonPath, formatedEpisode+appendHD(file)+appendExtension(file))
+								moviePath = os.path.join(dirConf.movieDestination, title+ ' (' + str(year) + ')' + appendHD(file)+appendExtension(file))
+								
+								f.write("\t" + title + "\n")
+								print "Linked " + fullPath + " to movie title \n" + " "*4 + title
+							else:
+								print "No titles for " + fullPath
+							f.close()
+								#if not os.path.exists(moviePath):
+								#	os.link(fullPath, moviePath)
+				# else:
+				# 	seriesRow = getTvSeries(conn, tvShowInfo[0])
+				# 	if seriesRow == None:
+				# 		addPendingSeries(conn, tvShowInfo[0])
+				# 		pendingItems += 1
+				# 	elif seriesRow[3] == 2:
+				# 		series = seriesRow[2]
+				# 		formatedEpisode = '%s - %sx%s' % (series, tvShowInfo[1], tvShowInfo[2])
+				# 		seriesPath = os.path.join(dirConf.tvDestination, series)
+				# 		seasonPath = os.path.join(seriesPath, 'Season '+tvShowInfo[1])
+				# 		episodePath = os.path.join(seasonPath, formatedEpisode+appendHD(file)+appendExtension(file))
 				
-						#Check if the series is already in the content
-						if not os.path.exists(seriesPath):
-							os.makedirs(seriesPath)
-						if not os.path.exists(seasonPath):
-							os.makedirs(seasonPath)
-						if not os.path.exists(episodePath):
-							os.link(fullPath, episodePath)
-							addedShows.append(formatedEpisode)
+				# 		#Check if the series is already in the content
+				# 		if not os.path.exists(seriesPath):
+				# 			os.makedirs(seriesPath)
+				# 		if not os.path.exists(seasonPath):
+				# 			os.makedirs(seasonPath)
+				# 		if not os.path.exists(episodePath):
+				# 			os.link(fullPath, episodePath)
+				# 			addedShows.append(formatedEpisode)
 	conn.close()
 	if pendingItems > 0:
 		sendXbmcNotification("Pending Content", str(pendingItems)+" item(s) pending approval.")

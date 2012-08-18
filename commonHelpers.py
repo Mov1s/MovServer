@@ -31,7 +31,7 @@ def isVideo(fileName):
 	return result
 
 def isOfMovieSize(fileName):
-	return True
+	#return True
 	result = False
 	if os.path.getsize(fileName) >= 629145600:
 		result = True
@@ -57,42 +57,30 @@ def getSeries(fileName):
 
 	return [series, season, episode]
 
-def filter(word):
-	word = word.lower()
-	word = string.replace(word, 'demonoid.me', '')
-	word = string.replace(word, 'avchd', '')
-	word = string.replace(word, '++demonoid.me++', '')
-	return word
-
 def findTitles(fileName):
 	a = imdb.IMDb()
-	filteredFileName = filter(fileName)
-	fileNameArray = re.findall(r'[^\s_.\[\]\(\)-]+', filteredFileName)
+	fileName = normalizeCase(fileName)
+	fileName = removeBlacklistedWords(fileName)
+	fileName = removePunctuation(fileName)
+	fileNameArray = fileName.split()
+
 	i = 0
-	titles = []
+	titles = {}
 	movies = []
-	returnMovies = []
 	lastSuccessfulTitle = ''
 	while True:
-		results = a.search_movie(string.replace(','.join(fileNameArray[0:i+1]), ',', ' '))
-		if len(results) != 0 and i!= len(fileNameArray):
+		partialFileName = titleStringFromIndexOfTitleArray(fileNameArray, i)
+		results = a.search_movie(partialFileName)
+		if len(results) != 0 and i != len(fileNameArray):
 			newMovie = movie.createAsPending(results[0]['title'])
-			newMovie.year = results[0]['year']
-			try:
-				titles.index(newMovie.title)
-			except ValueError:
-				titles.append(newMovie.title)
+			#newMovie.year = results[0]['year']
+			if not newMovie.title in titles:
+				titles[newMovie.title] = True
 				movies.append(newMovie)
 			i=i+1
-			lastSuccessfulTitle = string.replace(','.join(fileNameArray[0:i+1]), ',', ' ')
+			lastSuccessfulTitle = partialFileName
 		else:
-			for aMovie in movies:
-				pMatch = percentageOfTitleMatch(aMovie, lastSuccessfulTitle)
-				returnMovies.append([pMatch, aMovie])
-			returnMovies.sort(reverse=True)
-			movies = []
-			for item in returnMovies:
-				movies.append(item[1])
+			movies = orderMovieArrayByMatchingTitle(movies, lastSuccessfulTitle)
 			break
 	return movies
 
@@ -120,18 +108,79 @@ def sendXbmcNotification(title, message):
 	except:
 		print "Had a problem sending message to XBMC"
 
-def percentageOfTitleMatch(aMovie, secondTitle):
-	firstArray = aMovie.title.lower().split()
-	secondArray = secondTitle.lower().split()
+def titleStringFromIndexOfTitleArray(titleArray, index):
+	return string.replace(','.join(titleArray[0:index+1]), ',', ' ')
 
+def removePunctuation(title):
+	title = re.sub('[%s]' % re.escape(string.punctuation), ' ', title)
+	return title
+
+def normalizeCase(title):
+	return title.lower()
+
+def replaceNumeralsInArray(titleArray):
+	if 'ii' in titleArray:
+		titleArray[titleArray.index('ii')] = '2'
+	if 'iii' in titleArray:
+		titleArray[titleArray.index('iii')] = '3'
+	if 'iv' in titleArray:
+		titleArray[titleArray.index('iv')] = '4'
+	return titleArray
+
+def replaceAbbreviations(title):
+	return title
+
+def removeBlacklistedWords(title):
+	title = string.replace(title, 'demonoid.me', '')
+	title = string.replace(title, 'avchd', '')
+	title = string.replace(title, '++demonoid.me++', '')
+	return title
+
+def orderMovieArrayByMatchingTitle(movieArray, title):
+	sortedMovies = []
+	for m in movieArray:
+		pMatch = percentageOfTitleMatch(m.title, title)
+		sortedMovies.append([pMatch, m])
+		sortedMovies.sort(reverse=True)
+	returnMovies = []
+	for m in sortedMovies:
+		returnMovies.append(m[1])
+	return returnMovies
+
+def percentageOfTitleMatch(firstTitle, secondTitle):
+	#Format the first title for comparison
+	firstTitle = normalizeCase(firstTitle)
+	firstTitle = removeBlacklistedWords(firstTitle)
+	firstTitle = removePunctuation(firstTitle)
+	firstTitle = replaceAbbreviations(firstTitle)
+
+	#Format the second title for comparison
+	secondTitle = normalizeCase(secondTitle)
+	secondTitle = removeBlacklistedWords(secondTitle)
+	secondTitle = removePunctuation(secondTitle)
+	secondTitle = replaceAbbreviations(secondTitle)
+
+	#Split the formated titles into comparable word arrays
+	firstArray = firstTitle.split()
+	secondArray = secondTitle.split()
+
+	#Replace numerals
+	firstArray = replaceNumeralsInArray(firstArray)
+	secondArray = replaceNumeralsInArray(secondArray)
+
+	#Ensure the second array is always the larger of the two
 	if len(firstArray) > len(secondArray):
 		tempArray = firstArray
 		firstArray = secondArray
 		secondArray = tempArray
 
+	#Count the matching words between the two titles
 	matchingWordCount = 0
 	for word in firstArray:
 		if word in secondArray:
 			matchingWordCount += 1
 
-	return float(matchingWordCount) / len(secondArray)
+	percentFirstMatch = float(matchingWordCount) / len(firstArray)
+	percentSecondMatch = float(matchingWordCount) / len(secondArray)
+	#Return the percentage of matching words between the two titles
+	return percentFirstMatch * percentSecondMatch
