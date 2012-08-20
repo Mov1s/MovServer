@@ -14,6 +14,11 @@ def addSeriesAlias(conn, seriesId, newName):
 	cursor.execute("UPDATE TvSeries SET alias = %s, FileStates_id = 2 WHERE id = %d", (newName, seriesId))
  	conn.commit()
 
+def addFinalizedSeries(conn, series, alias):
+	cursor = conn.cursor()
+	cursor.execute("INSERT INTO TvSeries (series, alias, FileStates_id) VALUES (%s, %s, 2)", (series, alias))
+	conn.commit()
+
 def addPendingSeries(conn, series):
 	cursor = conn.cursor()
 	cursor.execute("INSERT INTO TvSeries (series, FileStates_id) VALUES (%s, 0)", (series))

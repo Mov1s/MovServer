@@ -5,6 +5,7 @@ import os
 import httplib
 import commonSettings
 import models.movie as movie
+import models.tvSeries as tvSeries
 
 def appendHD(word):
 	hd = ''
@@ -56,6 +57,34 @@ def getSeries(fileName):
 		episode = '0'+episode
 
 	return [series, season, episode]
+
+def findSeries(fileName):
+	a = imdb.IMDb()
+	fileName = normalizeCase(fileName)
+	fileName = removeBlacklistedWords(fileName)
+	fileName = removePunctuation(fileName)
+	fileNameArray = fileName.split()
+
+	i = 0
+	seriesTitles = {}
+	series = []
+	lastSuccessfulSeries = ''
+	while True:
+		partialFileName = titleStringFromIndexOfTitleArray(fileNameArray, i)
+		results = a.search_movie(partialFileName)
+		if len(results) != 0 and i != len(fileNameArray):
+			if results[0]['kind'] == 'tv series':
+				newSeries = tvSeries.create(fileName)
+				newSeries.alias = results[0]['title']
+				if not newSeries.alias in seriesTitles:
+					seriesTitles[newSeries.alias] = True
+					series.append(newSeries)
+				lastSuccessfulSeries = partialFileName
+			i=i+1
+		else:
+			series = orderTvArrayByMatchingSeries(series, lastSuccessfulSeries)
+			break
+	return series
 
 def findTitles(fileName):
 	a = imdb.IMDb()
@@ -146,6 +175,18 @@ def orderMovieArrayByMatchingTitle(movieArray, title):
 	for m in sortedMovies:
 		returnMovies.append(m[1])
 	return returnMovies
+
+def orderTvArrayByMatchingSeries(seriesArray, series):
+	sortedSeries = []
+	for s in seriesArray:
+		pMatch = percentageOfTitleMatch(s.alias, series)
+		print s.alias, pMatch
+		sortedSeries.append([pMatch, s])
+		sortedSeries.sort(reverse=True)
+	returnSeries = []
+	for s in sortedSeries:
+		returnSeries.append(s[1])
+	return returnSeries
 
 def percentageOfTitleMatch(firstTitle, secondTitle):
 	#Format the first title for comparison

@@ -5,6 +5,7 @@ from commonMysql import *
 from commonHelpers import *
 import MySQLdb as mdb
 import models.movie as movie
+import models.tvSeries as tvSeries
 import models.mediaFile as mediaFile
 import models.statusCode as statusCode
 
@@ -57,26 +58,29 @@ def main():
 							f.close()
 								#if not os.path.exists(moviePath):
 								#	os.link(fullPath, moviePath)
-				# else:
-				# 	seriesRow = getTvSeries(conn, tvShowInfo[0])
-				# 	if seriesRow == None:
-				# 		addPendingSeries(conn, tvShowInfo[0])
-				# 		pendingItems += 1
-				# 	elif seriesRow[3] == 2:
-				# 		series = seriesRow[2]
-				# 		formatedEpisode = '%s - %sx%s' % (series, tvShowInfo[1], tvShowInfo[2])
-				# 		seriesPath = os.path.join(dirConf.tvDestination, series)
-				# 		seasonPath = os.path.join(seriesPath, 'Season '+tvShowInfo[1])
-				# 		episodePath = os.path.join(seasonPath, formatedEpisode+appendHD(file)+appendExtension(file))
+				else:
+					retrievedTvSeries = tvSeries.getBySeries(tvShowInfo[0], conn)
+					if retrievedTvSeries == None:
+						serieses = findSeries(tvShowInfo[0])
+						if len(serieses) > 0:
+							print "Adding Tv Series ", serieses[0].alias
+							serieses[0].finalize().save(conn)
+							pendingItems += 1
+					#elif seriesRow[3] == 2:
+						# series = seriesRow[2]
+						# formatedEpisode = '%s - %sx%s' % (series, tvShowInfo[1], tvShowInfo[2])
+						# seriesPath = os.path.join(dirConf.tvDestination, series)
+						# seasonPath = os.path.join(seriesPath, 'Season '+tvShowInfo[1])
+						# episodePath = os.path.join(seasonPath, formatedEpisode+appendHD(file)+appendExtension(file))
 				
-				# 		#Check if the series is already in the content
-				# 		if not os.path.exists(seriesPath):
-				# 			os.makedirs(seriesPath)
-				# 		if not os.path.exists(seasonPath):
-				# 			os.makedirs(seasonPath)
-				# 		if not os.path.exists(episodePath):
-				# 			os.link(fullPath, episodePath)
-				# 			addedShows.append(formatedEpisode)
+						# #Check if the series is already in the content
+						# if not os.path.exists(seriesPath):
+						# 	os.makedirs(seriesPath)
+						# if not os.path.exists(seasonPath):
+						# 	os.makedirs(seasonPath)
+						# if not os.path.exists(episodePath):
+						# 	os.link(fullPath, episodePath)
+						# 	addedShows.append(formatedEpisode)
 	conn.close()
 	if pendingItems > 0:
 		sendXbmcNotification("Pending Content", str(pendingItems)+" item(s) pending approval.")
