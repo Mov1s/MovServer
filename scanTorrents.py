@@ -22,65 +22,60 @@ def main():
 		for file in files:
 			fullPath = os.path.join(root, file)
 			if isVideo(file):
-				tvShowInfo = getSeries(file)
-				if tvShowInfo == None:
-					if isOfMovieSize(fullPath):
-						retrievedMediaFile = mediaFile.getByFilePath(fullPath, conn)
-						if retrievedMediaFile == None:
-							newMediaFile = mediaFile.createWithPath(fullPath).save(conn)
-
-							f = open('titleResults.txt', 'a')
+				retrievedMediaFile = mediaFile.getByFilePath(fullPath, conn)
+				if retrievedMediaFile == None:
+					newMediaFile = mediaFile.createWithPath(fullPath).save(conn)
+					#WARNING this should be moved into the TvEpisode class as a static creator
+					tvShowInfo = getSeries(file)
+					if tvShowInfo == None:
+						#File is not a TvEpisode
+						if isOfMovieSize(fullPath):
 							#Check to see if the movie is in a sub folder
 							#if so then do the search based on folder name instead of file name
 							if len(root) > len(dirConf.contentSource):
 								folderTitle = os.path.basename(root)
-								f.write("File in folder, using the folder name: " + folderTitle + " instead of file name: " + file + "\n")
-								print "File in folder, using the folder name: " + folderTitle + " instead of file name: " + file
-								titles = findTitles(folderTitle)
+								movies = findMovies(folderTitle, newMediaFile)
 							else:
-								f.write("Using the file name: " + file + "\n")
-								print "Using the file name: " + file
-								titles = findTitles(file)
+								movies = findMovies(file, newMediaFile)
 
-							#Process all the titles
-							for t in titles:
-								t.associateMediaFile(newMediaFile).save(conn)
-							if len(titles) > 0:
-								title = titles[0].title
-								year = titles[0].year
+							#Save all of the possible movies
+							for m in movies:
+								m.save(conn)
 
-								moviePath = os.path.join(dirConf.movieDestination, title+ ' (' + str(year) + ')' + appendHD(file)+appendExtension(file))
-								
-								f.write("\t" + title + "\n")
+							if len(movies) > 0:
+								title = movies[0].title
+								year = movies[0].year
+								moviePath = os.path.join(dirConf.movieDestination, movies[0].formatFileTitle())
 								print "Linked " + fullPath + " to movie title \n" + " "*4 + title
+								if not os.path.exists(moviePath):
+									os.link(fullPath, moviePath)
+								movies[0].linkMediaFile(conn)
+								movies[0].save(conn)
 							else:
-								print "No titles for " + fullPath
-							f.close()
-								#if not os.path.exists(moviePath):
-								#	os.link(fullPath, moviePath)
-				else:
-					retrievedTvSeries = tvSeries.getBySeries(tvShowInfo[0], conn)
-					if retrievedTvSeries == None:
-						serieses = findSeries(tvShowInfo[0])
-						if len(serieses) > 0:
-							print "Adding Tv Series ", serieses[0].alias
-							serieses[0].finalize().save(conn)
-							pendingItems += 1
-					#elif seriesRow[3] == 2:
-						# series = seriesRow[2]
-						# formatedEpisode = '%s - %sx%s' % (series, tvShowInfo[1], tvShowInfo[2])
-						# seriesPath = os.path.join(dirConf.tvDestination, series)
-						# seasonPath = os.path.join(seriesPath, 'Season '+tvShowInfo[1])
-						# episodePath = os.path.join(seasonPath, formatedEpisode+appendHD(file)+appendExtension(file))
-				
-						# #Check if the series is already in the content
-						# if not os.path.exists(seriesPath):
-						# 	os.makedirs(seriesPath)
-						# if not os.path.exists(seasonPath):
-						# 	os.makedirs(seasonPath)
-						# if not os.path.exists(episodePath):
-						# 	os.link(fullPath, episodePath)
-						# 	addedShows.append(formatedEpisode)
+								print "No movies for " + fullPath			
+					#else:
+						# retrievedTvSeries = tvSeries.getBySeries(tvShowInfo[0], conn)
+						# if retrievedTvSeries == None:
+						# 	serieses = findSeries(tvShowInfo[0])
+						# 	if len(serieses) > 0:
+						# 		print "Adding Tv Series ", serieses[0].alias
+						# 		serieses[0].finalize().save(conn)
+						# 		pendingItems += 1
+						#elif seriesRow[3] == 2:
+							# series = seriesRow[2]
+							# formatedEpisode = '%s - %sx%s' % (series, tvShowInfo[1], tvShowInfo[2])
+							# seriesPath = os.path.join(dirConf.tvDestination, series)
+							# seasonPath = os.path.join(seriesPath, 'Season '+tvShowInfo[1])
+							# episodePath = os.path.join(seasonPath, formatedEpisode+appendHD(file)+appendExtension(file))
+					
+							# #Check if the series is already in the content
+							# if not os.path.exists(seriesPath):
+							# 	os.makedirs(seriesPath)
+							# if not os.path.exists(seasonPath):
+							# 	os.makedirs(seasonPath)
+							# if not os.path.exists(episodePath):
+							# 	os.link(fullPath, episodePath)
+							# 	addedShows.append(formatedEpisode)
 	conn.close()
 	if pendingItems > 0:
 		sendXbmcNotification("Pending Content", str(pendingItems)+" item(s) pending approval.")

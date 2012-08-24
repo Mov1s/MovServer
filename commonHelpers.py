@@ -32,7 +32,7 @@ def isVideo(fileName):
 	return result
 
 def isOfMovieSize(fileName):
-	#return True
+	return True
 	result = False
 	if os.path.getsize(fileName) >= 629145600:
 		result = True
@@ -86,7 +86,7 @@ def findSeries(fileName):
 			break
 	return series
 
-def findTitles(fileName):
+def findMovies(fileName, associatedMediaFile = None):
 	a = imdb.IMDb()
 	fileName = normalizeCase(fileName)
 	fileName = removeBlacklistedWords(fileName)
@@ -97,20 +97,19 @@ def findTitles(fileName):
 	titles = {}
 	movies = []
 	lastSuccessfulTitle = ''
-	while True:
+	for i in range(0, len(fileNameArray)):
 		partialFileName = titleStringFromIndexOfTitleArray(fileNameArray, i)
 		results = a.search_movie(partialFileName)
-		if len(results) != 0 and i != len(fileNameArray):
-			newMovie = movie.createAsPending(results[0]['title'])
-			#newMovie.year = results[0]['year']
+		if len(results) != 0:
+			newMovie = movie.create(results[0]['title'], associatedMediaFile)
+			if results[0].has_key('year'):
+				newMovie.year = results[0]['year']
 			if not newMovie.title in titles:
 				titles[newMovie.title] = True
 				movies.append(newMovie)
-			i=i+1
 			lastSuccessfulTitle = partialFileName
-		else:
-			movies = orderMovieArrayByMatchingTitle(movies, lastSuccessfulTitle)
-			break
+	movies = orderMovieArrayByMatchingTitle(movies, lastSuccessfulTitle)
+
 	return movies
 
 def findTitlesRaw(fileName):
@@ -154,6 +153,11 @@ def replaceNumeralsInArray(titleArray):
 		titleArray[titleArray.index('iii')] = '3'
 	if 'iv' in titleArray:
 		titleArray[titleArray.index('iv')] = '4'
+	return titleArray
+
+def removeLeadingTheInArray(titleArray):
+	if titleArray[0].lower() == 'the':
+		del titleArray[0]
 	return titleArray
 
 def replaceAbbreviations(title):
@@ -205,7 +209,7 @@ def percentageOfTitleMatch(firstTitle, secondTitle):
 	firstArray = firstTitle.split()
 	secondArray = secondTitle.split()
 
-	#Replace numerals
+	#Replace numerals and remove leading 'The'
 	firstArray = replaceNumeralsInArray(firstArray)
 	secondArray = replaceNumeralsInArray(secondArray)
 

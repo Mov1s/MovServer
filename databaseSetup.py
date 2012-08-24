@@ -18,7 +18,7 @@ def resetTables(settings):
 		conn = mdb.connect(settings.mysqlServer, settings.mysqlUser, settings.mysqlPassword, 'movServer')
 		cursor = conn.cursor()
 		cursor.execute('DROP TABLE IF EXISTS TvSeries')
-		cursor.execute('DROP TABLE IF EXISTS StatusCodes')
+		cursor.execute('DROP TABLE IF EXISTS TvEpisodes')
 		cursor.execute('DROP TABLE IF EXISTS MediaFiles')
 		cursor.execute('DROP TABLE IF EXISTS Movies')
 		conn.close()
@@ -34,36 +34,41 @@ def createTables(settings):
 			CREATE TABLE IF NOT EXISTS TvSeries
 			(
 				id					INT NOT NULL AUTO_INCREMENT,
-				series				VARCHAR(1000) NOT NULL,
+				title				VARCHAR(1000) NOT NULL,
 				alias				VARCHAR(1000),
-				FileStates_id		INT NOT NULL,
 				PRIMARY KEY 		(id)
 			)''')
 		cursor.execute('''
-			CREATE TABLE IF NOT EXISTS StatusCodes
+			CREATE TABLE IF NOT EXISTS TvEpisodes
 			(
 				id					INT NOT NULL AUTO_INCREMENT,
-				name				VARCHAR(50),
+				FK_TvSeries_id		INT NOT NULL,
+				FK_MedaFile_id 		INT NOT NULL,
+				season				INT NOT NULL,
+				episode				INT NOT NULL,
+				title				VARCHAR(1000),
+				airDate				VARCHAR(50),
 				PRIMARY KEY 		(id)
 			)''')
 		cursor.execute('''
 			CREATE TABLE IF NOT EXISTS MediaFiles
 			(
-				id					BIGINT NOT NULL AUTO_INCREMENT,
+				id					INT NOT NULL AUTO_INCREMENT,
 				path				VARCHAR(1000) NOT NULL,
+				linkedPath			VARCHAR(1000),
 				PRIMARY KEY 		(id)
 			)''')
 		cursor.execute('''
 			CREATE TABLE IF NOT EXISTS Movies
 			(
-				id					BIGINT NOT NULL AUTO_INCREMENT,
-				teh_id				BIGINT,
+				id					INT NOT NULL AUTO_INCREMENT,
 				title				VARCHAR(1000) NOT NULL,
 				year				VARCHAR(4),
 				posterUrl			VARCHAR(1000),
 				summary				VARCHAR(1000),
 				rating				VARCHAR(5),
-				FK_media_file_id	BIGINT,
+				active				INT,
+				FK_MediaFile_id		INT NOT NULL,
 				PRIMARY KEY 		(id)
 			)''')
 		conn.close()
