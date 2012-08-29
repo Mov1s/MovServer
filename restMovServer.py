@@ -1,14 +1,9 @@
 import bottle
 from bottle import route, run, request, abort
-import os, sys, re
-import string
-import commonSettings
-from commonHelpers import *
-import MySQLdb as mdb
+
 import models.movie as movie
-import models.tvSeries as tvSeries
 import models.mediaFile as mediaFile
-import models.statusCode as statusCode
+import helpers.mediaLinker as mediaLinker
 
 @route('/library/movies', method='GET')
 def getLibraryMovies():
@@ -42,21 +37,8 @@ def getLibraryMovieSibblings(movieId):
 @route('/library/movies/<movieId>/link', method='GET')
 def getLibraryMovieCreateLink(movieId):
 	linkedMovie = movie.getByMovieId(movieId)
-	linkedMovie.linkMediaFile()
-	linkedMovie.save()
-
-	# dirConf = commonSettings.directorySettings()
-
-	# existingMediaFile = mediaFile.getByMediaFileId(1)
-	# existingMovie = movie.getByMovieId(5)
-	# title = existingMovie.title
-	# year = existingMovie.year
-	# file = existingMediaFile.path
-
-	# moviePath = os.path.join(dirConf.movieDestination, title+ ' (' + str(year) + ')' + appendHD(file)+appendExtension(file))
-
-	# existingMediaFile.linkedPath = moviePath
-	# existingMediaFile.save()
+	linkedMediaFile = mediaFile.getByMediaFileId(linkedMovie.associatedMediaFileId)
+	mediaLinker.linkMediaFileToMovie(linkedMediaFile, linkedMovie)
 	return 'Success'
 
 run(host='localhost', port=8080)

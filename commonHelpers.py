@@ -5,18 +5,7 @@ import os
 import httplib
 import commonSettings
 import models.movie as movie
-import models.tvSeries as tvSeries
-
-def appendHD(word):
-	hd = ''
-	if (string.find(word, '720') != -1):
-		hd =' [720]'
-	elif (string.find(word, '1080') != -1):
-		hd = ' [1080]'
-	return hd
-
-def appendExtension(word):
-	return word[string.rfind(word, '.'):]
+import models.series as series
 
 def isVideo(fileName):
 	result = False
@@ -67,26 +56,25 @@ def findSeries(fileName):
 
 	i = 0
 	seriesTitles = {}
-	series = []
+	serieses = []
 	lastSuccessfulSeries = ''
 	while True:
 		partialFileName = titleStringFromIndexOfTitleArray(fileNameArray, i)
 		results = a.search_movie(partialFileName)
 		if len(results) != 0 and i != len(fileNameArray):
 			if results[0]['kind'] == 'tv series':
-				newSeries = tvSeries.create(fileName)
-				newSeries.alias = results[0]['title']
-				if not newSeries.alias in seriesTitles:
-					seriesTitles[newSeries.alias] = True
-					series.append(newSeries)
+				newSeries = series.create(results[0]['title'])
+				if not newSeries.title in seriesTitles:
+					seriesTitles[newSeries.title] = True
+					serieses.append(newSeries)
 				lastSuccessfulSeries = partialFileName
 			i=i+1
 		else:
-			series = orderTvArrayByMatchingSeries(series, lastSuccessfulSeries)
+			serieses = orderTvArrayByMatchingSeries(serieses, lastSuccessfulSeries)
 			break
-	return series
+	return serieses
 
-def findMovies(fileName, associatedMediaFile = None):
+def findMovies(fileName):
 	a = imdb.IMDb()
 	fileName = normalizeCase(fileName)
 	fileName = removeBlacklistedWords(fileName)
@@ -101,7 +89,7 @@ def findMovies(fileName, associatedMediaFile = None):
 		partialFileName = titleStringFromIndexOfTitleArray(fileNameArray, i)
 		results = a.search_movie(partialFileName)
 		if len(results) != 0:
-			newMovie = movie.create(results[0]['title'], associatedMediaFile)
+			newMovie = movie.create(results[0]['title'])
 			if results[0].has_key('year'):
 				newMovie.year = results[0]['year']
 			if not newMovie.title in titles:
@@ -180,11 +168,11 @@ def orderMovieArrayByMatchingTitle(movieArray, title):
 		returnMovies.append(m[1])
 	return returnMovies
 
-def orderTvArrayByMatchingSeries(seriesArray, series):
+def orderTvArrayByMatchingSeries(seriesArray, aSeries):
 	sortedSeries = []
 	for s in seriesArray:
-		pMatch = percentageOfTitleMatch(s.alias, series)
-		print s.alias, pMatch
+		pMatch = percentageOfTitleMatch(s.title, aSeries)
+		print s.title, pMatch
 		sortedSeries.append([pMatch, s])
 		sortedSeries.sort(reverse=True)
 	returnSeries = []

@@ -2,8 +2,8 @@ import sys
 import os
 import scanTorrents
 import generateBackdrops
-import commonSettings
 import databaseSetup
+import helpers.settingsManager as settingsManager
 
 #Print the correct usage syntax
 def printUsage():
@@ -46,7 +46,7 @@ def main():
 	if argument == 's':
 		scanTorrents.main()
 	elif argument == 'g':
-		systemConf = commonSettings.systemSettings()
+		systemConf = settingsManager.systemSettings()
 		databaseSetup.resetTables(systemConf)
 		databaseSetup.createTables(systemConf)
 	elif argument == 'b':

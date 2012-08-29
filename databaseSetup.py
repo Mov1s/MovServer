@@ -17,8 +17,9 @@ def resetTables(settings):
 	try:
 		conn = mdb.connect(settings.mysqlServer, settings.mysqlUser, settings.mysqlPassword, 'movServer')
 		cursor = conn.cursor()
-		cursor.execute('DROP TABLE IF EXISTS TvSeries')
-		cursor.execute('DROP TABLE IF EXISTS TvEpisodes')
+		cursor.execute('DROP TABLE IF EXISTS Series')
+		cursor.execute('DROP TABLE IF EXISTS SeriesAlias')
+		cursor.execute('DROP TABLE IF EXISTS Episodes')
 		cursor.execute('DROP TABLE IF EXISTS MediaFiles')
 		cursor.execute('DROP TABLE IF EXISTS Movies')
 		conn.close()
@@ -31,23 +32,29 @@ def createTables(settings):
 		conn = mdb.connect(settings.mysqlServer, settings.mysqlUser, settings.mysqlPassword, 'movServer')
 		cursor = conn.cursor()
 		cursor.execute('''
-			CREATE TABLE IF NOT EXISTS TvSeries
+			CREATE TABLE IF NOT EXISTS Series
 			(
 				id					INT NOT NULL AUTO_INCREMENT,
 				title				VARCHAR(1000) NOT NULL,
-				alias				VARCHAR(1000),
+				active				INT,
+				FK_SeriesAlias_id	INT NOT NULL,
 				PRIMARY KEY 		(id)
 			)''')
 		cursor.execute('''
-			CREATE TABLE IF NOT EXISTS TvEpisodes
+			CREATE TABLE IF NOT EXISTS SeriesAlias
 			(
 				id					INT NOT NULL AUTO_INCREMENT,
-				FK_TvSeries_id		INT NOT NULL,
-				FK_MedaFile_id 		INT NOT NULL,
+				string				VARCHAR(1000) NOT NULL,
+				PRIMARY KEY 		(id)
+			)''')
+		cursor.execute('''
+			CREATE TABLE IF NOT EXISTS Episodes
+			(
+				id					INT NOT NULL AUTO_INCREMENT,
 				season				INT NOT NULL,
 				episode				INT NOT NULL,
-				title				VARCHAR(1000),
-				airDate				VARCHAR(50),
+				FK_SeriesAlias_id	INT,
+				FK_MediaFile_id 	INT NOT NULL,
 				PRIMARY KEY 		(id)
 			)''')
 		cursor.execute('''

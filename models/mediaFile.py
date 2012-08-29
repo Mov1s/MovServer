@@ -1,7 +1,6 @@
 #MediaFile model
-import statusCode
 import MySQLdb as mdb
-import commonMysql
+import helpers.mysqlConnector as mySql
 
 class mediaFile():
 	id = None
@@ -10,7 +9,7 @@ class mediaFile():
 
 	def save(self, conn = None):
 		if conn == None:
-			conn = commonMysql.createConnection()
+			conn = mySql.createConnection()
 		cursor = conn.cursor()
 
 		#New Media File
@@ -35,7 +34,7 @@ class mediaFile():
 #conn: the connection to use for the database query, if none provided a default is created
 def getByFilePath(path, conn = None):
 	if conn == None:
-		conn = commonMysql.createConnection()
+		conn = mySql.createConnection()
 	cursor = conn.cursor()
 
 	cursor.execute("SELECT * FROM MediaFiles mf WHERE mf.path = %s", (path))
@@ -51,7 +50,7 @@ def getByFilePath(path, conn = None):
 #conn: the connection to use for the database query, if none provided a default is created
 def getByMediaFileId(mediaFileId, conn = None):
 	if conn == None:
-		conn = commonMysql.createConnection()
+		conn = mySql.createConnection()
 	cursor = conn.cursor()
 
 	cursor.execute("SELECT * FROM MediaFiles mf WHERE mf.id = %s", (mediaFileId))
@@ -62,6 +61,8 @@ def getByMediaFileId(mediaFileId, conn = None):
 		movieResult = createFromArray(fileInfo)
 		return movieResult
 
+#Create and return a new mediaFile from an array formated by the database
+#mediaFileInfoArray: an array formated as a database return containing media file details
 def createFromArray(mediaFileInfoArray):
 	mediaFileResult = mediaFile()
 	mediaFileResult.id = mediaFileInfoArray[0]
@@ -69,6 +70,8 @@ def createFromArray(mediaFileInfoArray):
 	mediaFileResult.linkedPath = mediaFileInfoArray[2]
 	return mediaFileResult
 
+#Create and return a new mediaFile
+#path: the path of the new media file
 def createWithPath(path):
 	mediaFileResult = mediaFile()
 	mediaFileResult.path = path

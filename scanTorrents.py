@@ -1,20 +1,22 @@
 import os, sys, re
 import string
-import commonSettings
-from commonMysql import *
+
 from commonHelpers import *
-import MySQLdb as mdb
 import models.movie as movie
-import models.tvSeries as tvSeries
+import models.series as series
+import models.seriesAlias as seriesAlias
+import models.episode as episode
 import models.mediaFile as mediaFile
-import models.statusCode as statusCode
+import helpers.mediaLinker as mediaLinker
+import helpers.mysqlConnector as mySql
+import helpers.settingsManager as settingsManager
 
 def main():
 	print "Starting Scan"
-	systemConf = commonSettings.systemSettings()
-	dirConf = commonSettings.directorySettings()
+	systemConf = settingsManager.systemSettings()
+	dirConf = settingsManager.directorySettings()
 
-	conn = mdb.connect(systemConf.mysqlServer, systemConf.mysqlUser, systemConf.mysqlPassword, 'movServer')
+	conn = mySql.createConnection()
 
 	pendingItems = 0
 	addedShows = []
@@ -34,26 +36,38 @@ def main():
 							#if so then do the search based on folder name instead of file name
 							if len(root) > len(dirConf.contentSource):
 								folderTitle = os.path.basename(root)
-								movies = findMovies(folderTitle, newMediaFile)
+								movies = findMovies(folderTitle)
 							else:
-								movies = findMovies(file, newMediaFile)
-
-							#Save all of the possible movies
-							for m in movies:
-								m.save(conn)
+								movies = findMovies(file)
 
 							if len(movies) > 0:
-								title = movies[0].title
-								year = movies[0].year
-								moviePath = os.path.join(dirConf.movieDestination, movies[0].formatFileTitle())
-								print "Linked " + fullPath + " to movie title \n" + " "*4 + title
-								if not os.path.exists(moviePath):
-									os.link(fullPath, moviePath)
-								movies[0].linkMediaFile(conn)
-								movies[0].save(conn)
+								mediaLinker.associateArrayOfMoviesWithMediaFile(movies, newMediaFile, conn)
+								print "Linked " + fullPath + " to movie title \n" + " "*4 + movies[0].title
+								mediaLinker.linkMediaFileToMovie(newMediaFile, movies[0], conn)
 							else:
 								print "No movies for " + fullPath			
-					#else:
+					else:
+						anEpisode = episode.create(tvShowInfo[1], tvShowInfo[2])
+						aSeriesAlias = seriesAlias.getBySeriesAliasString(tvShowInfo[0], conn)
+						anEpisode = mediaLinker.associateEpisodeWithMediaFile(anEpisode, newMediaFile)
+						if aSeriesAlias == None:
+							aSeriesAlias = seriesAlias.create(tvShowInfo[0]).save(conn)
+							anEpisode = mediaLinker.associateEpisodeWithSeriesAlias(anEpisode, aSeriesAlias)
+							seriesArray = findSeries(file)
+							if len(seriesArray) > 0:
+								mediaLinker.associateArrayOfSeriesWithSeriesAlias(seriesArray, aSeriesAlias)
+								mediaLinker.linkMediaFileToSeries(newMediaFile, seriesArray[0])
+								print "Linked " + fullPath + " to new series \n" + " "*4 + seriesArray[0].title
+							else:
+								print "No series for " + fullPath
+						else:
+							anEpisode = mediaLinker.associateEpisodeWithSeriesAlias(anEpisode, aSeriesAlias)
+							aSeries = series.getActiveBySeriesAliasId(aSeriesAlias.id, conn)
+							mediaLinker.linkMediaFileToSeries(newMediaFile, aSeries)
+							print "Linked " + fullPath + " to already existing series \n" + " "*4 + aSeries.title
+
+
+
 						# retrievedTvSeries = tvSeries.getBySeries(tvShowInfo[0], conn)
 						# if retrievedTvSeries == None:
 						# 	serieses = findSeries(tvShowInfo[0])
