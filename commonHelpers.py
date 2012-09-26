@@ -21,7 +21,7 @@ def isVideo(fileName):
 	return result
 
 def isOfMovieSize(fileName):
-	return True
+	# return True
 	result = False
 	if os.path.getsize(fileName) >= 629145600:
 		result = True
@@ -54,24 +54,24 @@ def findSeries(fileName):
 	fileName = removePunctuation(fileName)
 	fileNameArray = fileName.split()
 
-	i = 0
 	seriesTitles = {}
 	serieses = []
 	lastSuccessfulSeries = ''
-	while True:
+	for i in range(0, len(fileNameArray)):		
 		partialFileName = titleStringFromIndexOfTitleArray(fileNameArray, i)
 		results = a.search_movie(partialFileName)
-		if len(results) != 0 and i != len(fileNameArray):
-			if results[0]['kind'] == 'tv series':
-				newSeries = series.create(results[0]['title'])
+
+		loop = 3 if len(results) >= 3 else len(results)
+
+		for i in range(0, loop):
+			r = results[i]
+			if r['kind'] == 'tv series':
+				newSeries = series.create(r['title'])
 				if not newSeries.title in seriesTitles:
 					seriesTitles[newSeries.title] = True
 					serieses.append(newSeries)
 				lastSuccessfulSeries = partialFileName
-			i=i+1
-		else:
-			serieses = orderTvArrayByMatchingSeries(serieses, lastSuccessfulSeries)
-			break
+	serieses = orderTvArrayByMatchingSeries(serieses, lastSuccessfulSeries)
 	return serieses
 
 def findMovies(fileName):
@@ -88,13 +88,22 @@ def findMovies(fileName):
 	for i in range(0, len(fileNameArray)):
 		partialFileName = titleStringFromIndexOfTitleArray(fileNameArray, i)
 		results = a.search_movie(partialFileName)
-		if len(results) != 0:
-			newMovie = movie.create(results[0]['title'])
-			if results[0].has_key('year'):
-				newMovie.year = results[0]['year']
-			if not newMovie.title in titles:
-				titles[newMovie.title] = True
-				movies.append(newMovie)
+
+		loop = 3 if len(results) >= 3 else len(results)
+
+		for i in range(0, loop):
+			r = results[i]
+			newMovie = movie.create(r['title'])
+			if r.has_key('year'):
+				newMovie.year = r['year']
+			try:
+				titleIndex = '{0} {1}'.format(newMovie.title, newMovie.year)
+				if not titleIndex in titles:
+					titles[titleIndex] = True
+					movies.append(newMovie)
+			except UnicodeEncodeError:
+				print "UnicodeEncodeError"
+				continue
 			lastSuccessfulTitle = partialFileName
 	movies = orderMovieArrayByMatchingTitle(movies, lastSuccessfulTitle)
 
@@ -160,6 +169,7 @@ def removeBlacklistedWords(title):
 def orderMovieArrayByMatchingTitle(movieArray, title):
 	sortedMovies = []
 	for m in movieArray:
+		# titleWithYear = '{0} {1}'.format(m.title, m.year)
 		pMatch = percentageOfTitleMatch(m.title, title)
 		sortedMovies.append([pMatch, m])
 		sortedMovies.sort(reverse=True)
@@ -172,13 +182,21 @@ def orderTvArrayByMatchingSeries(seriesArray, aSeries):
 	sortedSeries = []
 	for s in seriesArray:
 		pMatch = percentageOfTitleMatch(s.title, aSeries)
-		print s.title, pMatch
 		sortedSeries.append([pMatch, s])
 		sortedSeries.sort(reverse=True)
 	returnSeries = []
 	for s in sortedSeries:
 		returnSeries.append(s[1])
 	return returnSeries
+
+#Needs some work
+def resolveTies(movieArray):
+	for i in range(0, len(movieArray)):
+		if i+1 < len(movieArray):
+			thisMovie = movieArray[i]
+			nextMovie = movieArray[i+1]
+			if thisMovie.title == nextMovie.title:
+				tiedMovies.append(thisMovie)
 
 def percentageOfTitleMatch(firstTitle, secondTitle):
 	#Format the first title for comparison
@@ -197,7 +215,7 @@ def percentageOfTitleMatch(firstTitle, secondTitle):
 	firstArray = firstTitle.split()
 	secondArray = secondTitle.split()
 
-	#Replace numerals and remove leading 'The'
+	#Replace numerals
 	firstArray = replaceNumeralsInArray(firstArray)
 	secondArray = replaceNumeralsInArray(secondArray)
 
@@ -213,7 +231,10 @@ def percentageOfTitleMatch(firstTitle, secondTitle):
 		if word in secondArray:
 			matchingWordCount += 1
 
+	# print firstTitle, ' ', secondTitle
+	# print '\t({0} / {1})*({2} / {3})'.format(matchingWordCount, len(firstArray), matchingWordCount, len(secondArray))
 	percentFirstMatch = float(matchingWordCount) / len(firstArray)
 	percentSecondMatch = float(matchingWordCount) / len(secondArray)
+	# print '\t', str(percentFirstMatch * percentSecondMatch)
 	#Return the percentage of matching words between the two titles
 	return percentFirstMatch * percentSecondMatch

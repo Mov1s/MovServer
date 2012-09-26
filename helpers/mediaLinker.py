@@ -111,14 +111,19 @@ def linkMediaFileToSeries(aMediaFile, aSeries, conn = None):
 
 	#Delete the existing linked file if there is one
 	removeHardLinkForMediaFile(aMediaFile)
+	removeSeasonFolderIfEmptyForMediaFile(aMediaFile)
+	removeSeriesFolderIfEmptyForMediaFile(aMediaFile)
 
 	#Generate a new linked file name and path and update the media file accordingly
 	episodeFileName = generateHardLinkNameFromMediaFileAndEpisodeAndSeries(aMediaFile, anEpisode, aSeries)
-	episodePath = os.path.join(dirConf.tvDestination, episodeFileName)
+	seasonPath = generateSeasonPathFromEpisodeAndSeries(anEpisode, aSeries)
+	episodePath = os.path.join(seasonPath, episodeFileName)
 	aMediaFile.linkedPath = episodePath
 	aMediaFile.save(conn)
 
 	#Create the new link
+	createSeriesFolderForMediaFile(aMediaFile)
+	createSeasonFolderForMediaFile(aMediaFile)
 	createHardLinkForMediaFile(aMediaFile)
 
 def removeHardLinkForMediaFile(aMediaFile):
@@ -129,33 +134,67 @@ def removeHardLinkForMediaFile(aMediaFile):
 	else:
 		return Exception
 
+def removeSeasonFolderIfEmptyForMediaFile(aMediaFile):
+	if aMediaFile.linkedPath != None:
+		seasonPath = os.path.dirname(aMediaFile.linkedPath)
+		if os.path.exists(seasonPath):
+			if os.listdir(seasonPath) == []:
+				os.rmdir(seasonPath)
+
+def removeSeriesFolderIfEmptyForMediaFile(aMediaFile):
+	if aMediaFile.linkedPath != None:
+		seasonPath = os.path.dirname(aMediaFile.linkedPath)
+		seriesPath = os.path.dirname(seasonPath)
+		if os.path.exists(seriesPath):
+			if os.listdir(seriesPath) == []:
+				os.rmdir(seriesPath)
+
 def createHardLinkForMediaFile(aMediaFile):
 	if aMediaFile.linkedPath != None:
 		fullPath = aMediaFile.path
 		moviePath = aMediaFile.linkedPath
 		if not os.path.exists(moviePath):
+			print "Linked " + fullPath + " to movie path \n" + " "*4 + moviePath
 			os.link(fullPath, moviePath)
 	else:
 		return Exception
+
+def createSeriesFolderForMediaFile(aMediaFile):
+	if aMediaFile.linkedPath != None:
+		seasonPath = os.path.dirname(aMediaFile.linkedPath)
+		seriesPath = os.path.dirname(seasonPath)
+		if not os.path.exists(seriesPath):
+			os.makedirs(seriesPath)
+
+def createSeasonFolderForMediaFile(aMediaFile):
+	if aMediaFile.linkedPath != None:
+		seasonPath = os.path.dirname(aMediaFile.linkedPath)
+		if not os.path.exists(seasonPath):
+			os.makedirs(seasonPath)
 
 #File naming functions ----------------------------------------------------------
 #--------------------------------------------------------------------------------
 def generateHardLinkNameFromMediaFileAndMovie(aMediaFile, aMovie):
 	if aMediaFile != None:
-		fileNameSkeleton = '{0} ({1}) [{2}]{3}'
-
 		#Get the parts of the file name i need
 		title = aMovie.title
 		year = aMovie.year
 		quality = generateQualityFromMediaFile(aMediaFile)
 		extension = generateExtensionFromMediaFile(aMediaFile)
+
+		fileNameSkeleton = '{0} ({1}) [{2}]{3}'
+		if quality == '':
+			fileNameSkeleton = '{0} ({1}){3}'
+
 		return fileNameSkeleton.format(title, year, quality, extension)
 	else:
 		return Exception
 
 def generateHardLinkNameFromMediaFileAndEpisodeAndSeries(aMediaFile, anEpisode, aSeries):
 	if aMediaFile != None:
-		fileNameSkeleton = '{0} - {1}x{2} [{3}]{4}'
+		episodeSkeleton = '0{2}' if anEpisode.episode <= 9 else '{2}'
+		seasonSkeleton = '0{1}' if anEpisode.season <= 9 else '{1}'
+		fileNameSkeleton = '{0} - '+seasonSkeleton+'x'+episodeSkeleton+' [{3}]{4}'
 
 		#Get the parts of the file name i need
 		series = aSeries.title
@@ -166,6 +205,15 @@ def generateHardLinkNameFromMediaFileAndEpisodeAndSeries(aMediaFile, anEpisode, 
 		return fileNameSkeleton.format(series, season, episode, quality, extension)
 	else:
 		return Exception
+
+def generateSeasonPathFromEpisodeAndSeries(anEpisode, aSeries):
+	dirConf = settingsManager.directorySettings()
+	seriesPath = os.path.join(dirConf.tvDestination, aSeries.title)
+
+	seasonFolderSkeleton = 'Season 0{0}' if anEpisode.season <= 9 else 'Season {0}'
+
+	seasonPath = os.path.join(seriesPath, seasonFolderSkeleton.format(anEpisode.season))
+	return seasonPath
 
 def generateQualityFromMediaFile(aMediaFile):
 	hd = ''
