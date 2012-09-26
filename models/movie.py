@@ -45,6 +45,7 @@ class movie():
 		jsonResult['summary'] = self.summary
 		jsonResult['rating'] = self.rating
 		jsonResult['active'] = self.active
+		jsonResult['associatedMediaFileId'] = self.associatedMediaFileId
 		return jsonResult
 
 #Returns a list of all movies that are attached to a media file with a given path

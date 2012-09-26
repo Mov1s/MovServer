@@ -32,6 +32,14 @@ class series():
 
 		return self
 
+	def asJson(self):
+		jsonResult = {}
+		jsonResult['id'] = self.id
+		jsonResult['title'] = self.title
+		jsonResult['active'] = self.active
+		jsonResult['seriesAliasId'] = self.associatedSeriesAliasId		
+		return jsonResult
+
 #Returns a tv series that has the given id
 #seriesId: the series id in question
 #conn: the connection to use for the database query, if none provided a default is created
@@ -81,6 +89,45 @@ def getActiveBySeriesAliasId(seriesAliasId, conn = None):
 		seriesInfo = cursor.fetchall()[0]
 		seriesResult = createFromArray(seriesInfo)
 		return seriesResult
+
+#Returns a list of series that are active links to series aliases in the library
+#conn: the connection to use for the database query, if none provided a default is created
+def getFromLibrary(conn = None):
+	if conn == None:
+		conn = mySql.createConnection()
+	cursor = conn.cursor()
+
+	cursor.execute("SELECT * FROM Series s WHERE s.active = 1")
+	if cursor.rowcount == 0:
+		return None
+	else:
+		seriesListResult = []
+		for seriesInfoArray in cursor.fetchall():
+			seriesResult = createFromArray(seriesInfoArray)
+			seriesListResult.append(seriesResult)
+		return seriesListResult
+
+#Returns a list of series that are sibblings to a series with the given id
+#seriesId: the id of the series in question
+#conn: the connection to use for the database query, if none provided a default is created
+def getSibblingsOfSeriesId(seriesId, conn = None):
+	if conn == None:
+		conn = mySql.createConnection()
+	cursor = conn.cursor()
+
+	cursor.execute("SELECT * FROM Series s WHERE s.id = %s", (seriesId))
+	lookupSeriesInfo = cursor.fetchall()[0]
+	lookupSeries = createFromArray(lookupSeriesInfo)
+
+	cursor.execute("SELECT * FROM Series s WHERE s.FK_SeriesAlias_id = %s", (lookupSeries.associatedSeriesAliasId))
+	if cursor.rowcount == 0:
+		return None
+	else:
+		seriesListResult = []
+		for seriesInfoArray in cursor.fetchall():
+			seriesResult = createFromArray(seriesInfoArray)
+			seriesListResult.append(seriesResult)
+		return seriesListResult
 
 #Create and return a new tv series from an array formated by the database
 #seriesInfoArray: an array formated as a database return containing tv series details

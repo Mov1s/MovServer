@@ -65,6 +65,24 @@ def getByMediaFileId(mediaFileId, conn = None):
 		episodeResult = createFromArray(episodeInfo)
 		return episodeResult
 
+#Returns a list of tv episode that have the given associated series alias id
+#seriesAliasId: the associated series alias id in question
+#conn: the connection to use for the database query, if none provided a default is created
+def getBySeriesAliasId(seriesAliasId, conn = None):
+	if conn == None:
+		conn = mySql.createConnection()
+	cursor = conn.cursor()
+
+	cursor.execute("SELECT * FROM Episodes WHERE FK_SeriesAlias_id = %s", (seriesAliasId))
+	if cursor.rowcount == 0:
+		return None
+	else:
+		episodeListResult = []
+		for episodeInfoArray in cursor.fetchall():
+			episodeResult = createFromArray(episodeInfoArray)
+			episodeListResult.append(episodeResult)
+		return episodeListResult
+
 #Create and return a new tv episode from an array formated by the database
 #episodeInfoArray: an array formated as a database return containing tv episode details
 def createFromArray(episodeInfoArray):
