@@ -1,11 +1,9 @@
-import string
-import imdb
-import re
-import os
-import httplib
-import commonSettings
+import string, imdb, re, os, httplib
+
 import models.movie as movie
 import models.series as series
+import helpers.titleHandler as titleHandler
+import helpers.settingsManager as settingsManager
 
 def isVideo(fileName):
 	result = False
@@ -21,7 +19,7 @@ def isVideo(fileName):
 	return result
 
 def isOfMovieSize(fileName):
-	# return True
+	return True
 	result = False
 	if os.path.getsize(fileName) >= 629145600:
 		result = True
@@ -47,55 +45,46 @@ def getSeries(fileName):
 
 	return [series, season, episode]
 
-def findSeries(fileName):
-	a = imdb.IMDb()
-	fileName = normalizeCase(fileName)
-	fileName = removeBlacklistedWords(fileName)
-	fileName = removePunctuation(fileName)
-	fileNameArray = fileName.split()
+def findImdbSeriesLikeTitle(fileName):
+	imdbContext = imdb.IMDb()
+	fileNameArray = titleHandler.returnWellFormatedArrayFromTitle(fileName)
 
 	seriesTitles = {}
 	serieses = []
 	lastSuccessfulSeries = ''
 	for i in range(0, len(fileNameArray)):		
 		partialFileName = titleStringFromIndexOfTitleArray(fileNameArray, i)
-		results = a.search_movie(partialFileName)
+		imdbResults = imdbContext.search_movie(partialFileName)
 
-		loop = 3 if len(results) >= 3 else len(results)
-
-		for i in range(0, loop):
-			r = results[i]
-			if r['kind'] == 'tv series':
-				newSeries = series.create(r['title'])
+		loop = 3 if len(imdbResults) >= 3 else len(imdbResults)
+		for j in range(0, loop):
+			imdbResult = imdbResults[j]
+			if imdbResult['kind'] == 'tv series':
+				newSeries = series.create(imdbResult['title'])
 				if not newSeries.title in seriesTitles:
 					seriesTitles[newSeries.title] = True
 					serieses.append(newSeries)
 				lastSuccessfulSeries = partialFileName
-	serieses = orderTvArrayByMatchingSeries(serieses, lastSuccessfulSeries)
+	serieses = titleHandler.orderTvArrayByMatchingSeries(serieses, lastSuccessfulSeries)
 	return serieses
 
-def findMovies(fileName):
-	a = imdb.IMDb()
-	fileName = normalizeCase(fileName)
-	fileName = removeBlacklistedWords(fileName)
-	fileName = removePunctuation(fileName)
-	fileNameArray = fileName.split()
+def findImdbMoviesLikeTitle(fileName):
+	imdbContext = imdb.IMDb()
+	fileNameArray = titleHandler.returnWellFormatedArrayFromTitle(fileName)
 
-	i = 0
 	titles = {}
 	movies = []
 	lastSuccessfulTitle = ''
 	for i in range(0, len(fileNameArray)):
 		partialFileName = titleStringFromIndexOfTitleArray(fileNameArray, i)
-		results = a.search_movie(partialFileName)
+		imdbResults = imdbContext.search_movie(partialFileName)
 
-		loop = 3 if len(results) >= 3 else len(results)
-
-		for i in range(0, loop):
-			r = results[i]
-			newMovie = movie.create(r['title'])
-			if r.has_key('year'):
-				newMovie.year = r['year']
+		loop = 3 if len(imdbResults) >= 3 else len(imdbResults)
+		for j in range(0, loop):
+			imdbResult = imdbResults[j]
+			newMovie = movie.create(imdbResult['title'])
+			if imdbResult.has_key('year'):
+				newMovie.year = imdbResult['year']
 			try:
 				titleIndex = '{0} {1}'.format(newMovie.title, newMovie.year)
 				if not titleIndex in titles:
@@ -105,8 +94,7 @@ def findMovies(fileName):
 				print "UnicodeEncodeError"
 				continue
 			lastSuccessfulTitle = partialFileName
-	movies = orderMovieArrayByMatchingTitle(movies, lastSuccessfulTitle)
-
+	movies = titleHandler.orderMovieArrayByMatchingTitle(movies, lastSuccessfulTitle)
 	return movies
 
 def findTitlesRaw(fileName):
@@ -124,7 +112,7 @@ def sendXbmcNotification(title, message):
 	title = string.replace(title, ' ', '%20')
 	message = string.replace(message, ' ', '%20')
 	try:
-		settings = commonSettings.systemSettings()
+		settings = settingsManager.systemSettings()
 		conn = httplib.HTTPConnection('localhost', settings.xbmcPort, timeout=1)
 		conn.connect()
 		conn.request('GET', '/xbmcCmds/xbmcHttp?command=ExecBuiltIn(Notification('+title+','+message+'))')
@@ -135,106 +123,3 @@ def sendXbmcNotification(title, message):
 
 def titleStringFromIndexOfTitleArray(titleArray, index):
 	return string.replace(','.join(titleArray[0:index+1]), ',', ' ')
-
-def removePunctuation(title):
-	title = re.sub('[%s]' % re.escape(string.punctuation), ' ', title)
-	return title
-
-def normalizeCase(title):
-	return title.lower()
-
-def replaceNumeralsInArray(titleArray):
-	if 'ii' in titleArray:
-		titleArray[titleArray.index('ii')] = '2'
-	if 'iii' in titleArray:
-		titleArray[titleArray.index('iii')] = '3'
-	if 'iv' in titleArray:
-		titleArray[titleArray.index('iv')] = '4'
-	return titleArray
-
-def removeLeadingTheInArray(titleArray):
-	if titleArray[0].lower() == 'the':
-		del titleArray[0]
-	return titleArray
-
-def replaceAbbreviations(title):
-	return title
-
-def removeBlacklistedWords(title):
-	title = string.replace(title, 'demonoid.me', '')
-	title = string.replace(title, 'avchd', '')
-	title = string.replace(title, '++demonoid.me++', '')
-	return title
-
-def orderMovieArrayByMatchingTitle(movieArray, title):
-	sortedMovies = []
-	for m in movieArray:
-		# titleWithYear = '{0} {1}'.format(m.title, m.year)
-		pMatch = percentageOfTitleMatch(m.title, title)
-		sortedMovies.append([pMatch, m])
-		sortedMovies.sort(reverse=True)
-	returnMovies = []
-	for m in sortedMovies:
-		returnMovies.append(m[1])
-	return returnMovies
-
-def orderTvArrayByMatchingSeries(seriesArray, aSeries):
-	sortedSeries = []
-	for s in seriesArray:
-		pMatch = percentageOfTitleMatch(s.title, aSeries)
-		sortedSeries.append([pMatch, s])
-		sortedSeries.sort(reverse=True)
-	returnSeries = []
-	for s in sortedSeries:
-		returnSeries.append(s[1])
-	return returnSeries
-
-#Needs some work
-def resolveTies(movieArray):
-	for i in range(0, len(movieArray)):
-		if i+1 < len(movieArray):
-			thisMovie = movieArray[i]
-			nextMovie = movieArray[i+1]
-			if thisMovie.title == nextMovie.title:
-				tiedMovies.append(thisMovie)
-
-def percentageOfTitleMatch(firstTitle, secondTitle):
-	#Format the first title for comparison
-	firstTitle = normalizeCase(firstTitle)
-	firstTitle = removeBlacklistedWords(firstTitle)
-	firstTitle = removePunctuation(firstTitle)
-	firstTitle = replaceAbbreviations(firstTitle)
-
-	#Format the second title for comparison
-	secondTitle = normalizeCase(secondTitle)
-	secondTitle = removeBlacklistedWords(secondTitle)
-	secondTitle = removePunctuation(secondTitle)
-	secondTitle = replaceAbbreviations(secondTitle)
-
-	#Split the formated titles into comparable word arrays
-	firstArray = firstTitle.split()
-	secondArray = secondTitle.split()
-
-	#Replace numerals
-	firstArray = replaceNumeralsInArray(firstArray)
-	secondArray = replaceNumeralsInArray(secondArray)
-
-	#Ensure the second array is always the larger of the two
-	if len(firstArray) > len(secondArray):
-		tempArray = firstArray
-		firstArray = secondArray
-		secondArray = tempArray
-
-	#Count the matching words between the two titles
-	matchingWordCount = 0
-	for word in firstArray:
-		if word in secondArray:
-			matchingWordCount += 1
-
-	# print firstTitle, ' ', secondTitle
-	# print '\t({0} / {1})*({2} / {3})'.format(matchingWordCount, len(firstArray), matchingWordCount, len(secondArray))
-	percentFirstMatch = float(matchingWordCount) / len(firstArray)
-	percentSecondMatch = float(matchingWordCount) / len(secondArray)
-	# print '\t', str(percentFirstMatch * percentSecondMatch)
-	#Return the percentage of matching words between the two titles
-	return percentFirstMatch * percentSecondMatch

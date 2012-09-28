@@ -1,5 +1,4 @@
-import os, sys, re
-import string
+import os, sys, re, string
 
 from commonHelpers import *
 import models.movie as movie
@@ -36,9 +35,9 @@ def main():
 							#if so then do the search based on folder name instead of file name
 							if len(root) > len(dirConf.contentSource):
 								folderTitle = os.path.basename(root)
-								movies = findMovies(folderTitle)
+								movies = findImdbMoviesLikeTitle(folderTitle)
 							else:
-								movies = findMovies(file)
+								movies = findImdbMoviesLikeTitle(file)
 
 							if len(movies) > 0:
 								mediaLinker.associateArrayOfMoviesWithMediaFile(movies, newMediaFile, conn)
@@ -53,7 +52,7 @@ def main():
 						if aSeriesAlias == None:
 							aSeriesAlias = seriesAlias.create(tvShowInfo[0]).save(conn)
 							anEpisode = mediaLinker.associateEpisodeWithSeriesAlias(anEpisode, aSeriesAlias)
-							seriesArray = findSeries(file)
+							seriesArray = findImdbSeriesLikeTitle(file)
 							if len(seriesArray) > 0:
 								mediaLinker.associateArrayOfSeriesWithSeriesAlias(seriesArray, aSeriesAlias)
 								episodeName = mediaLinker.linkMediaFileToSeries(newMediaFile, seriesArray[0])
@@ -68,30 +67,6 @@ def main():
 							addedContent.append(episodeName)
 							print "Linked " + fullPath + " to already existing series \n" + " "*4 + aSeries.title
 
-
-
-						# retrievedTvSeries = tvSeries.getBySeries(tvShowInfo[0], conn)
-						# if retrievedTvSeries == None:
-						# 	serieses = findSeries(tvShowInfo[0])
-						# 	if len(serieses) > 0:
-						# 		print "Adding Tv Series ", serieses[0].alias
-						# 		serieses[0].finalize().save(conn)
-						# 		pendingItems += 1
-						#elif seriesRow[3] == 2:
-							# series = seriesRow[2]
-							# formatedEpisode = '%s - %sx%s' % (series, tvShowInfo[1], tvShowInfo[2])
-							# seriesPath = os.path.join(dirConf.tvDestination, series)
-							# seasonPath = os.path.join(seriesPath, 'Season '+tvShowInfo[1])
-							# episodePath = os.path.join(seasonPath, formatedEpisode+appendHD(file)+appendExtension(file))
-					
-							# #Check if the series is already in the content
-							# if not os.path.exists(seriesPath):
-							# 	os.makedirs(seriesPath)
-							# if not os.path.exists(seasonPath):
-							# 	os.makedirs(seasonPath)
-							# if not os.path.exists(episodePath):
-							# 	os.link(fullPath, episodePath)
-							# 	addedShows.append(formatedEpisode)
 	conn.close()
 	if len(addedContent) == 1:
 		sendXbmcNotification("New Content", addedContent[0]+" was added to the library.")
