@@ -15,8 +15,8 @@ def associateMovieWithMediaFile(aMovie, aMediaFile, conn = None):
 	cursor = conn.cursor()
 
 	aMovie.associatedMediaFileId = aMediaFile.id
-	aMovie.save(conn)
-	return aMovie
+	aMovie.save(conn) 
+	return aMovie 
 
 def associateArrayOfMoviesWithMediaFile(aMovieArray, aMediaFile, conn = None):
 	if conn == None:
@@ -90,6 +90,8 @@ def linkMediaFileToMovie(aMediaFile, aMovie, conn = None):
 	#Create the new link
 	createHardLinkForMediaFile(aMediaFile)
 
+	return movieFileName
+
 def linkMediaFileToSeries(aMediaFile, aSeries, conn = None):
 	if conn == None:
 		conn = mySql.createConnection()
@@ -125,6 +127,8 @@ def linkMediaFileToSeries(aMediaFile, aSeries, conn = None):
 	createSeriesFolderForMediaFile(aMediaFile)
 	createSeasonFolderForMediaFile(aMediaFile)
 	createHardLinkForMediaFile(aMediaFile)
+
+	return episodeFileName
 
 def removeHardLinkForMediaFile(aMediaFile):
 	if aMediaFile.linkedPath != None:
@@ -182,9 +186,8 @@ def generateHardLinkNameFromMediaFileAndMovie(aMediaFile, aMovie):
 		quality = generateQualityFromMediaFile(aMediaFile)
 		extension = generateExtensionFromMediaFile(aMediaFile)
 
-		fileNameSkeleton = '{0} ({1}) [{2}]{3}'
-		if quality == '':
-			fileNameSkeleton = '{0} ({1}){3}'
+		#Genereate the file name skeleton depending on if the quality is HD
+		fileNameSkeleton = '{0} ({1}){3}' if quality == '' else '{0} ({1}) [{2}]{3}'
 
 		return fileNameSkeleton.format(title, year, quality, extension)
 	else:
@@ -192,16 +195,19 @@ def generateHardLinkNameFromMediaFileAndMovie(aMediaFile, aMovie):
 
 def generateHardLinkNameFromMediaFileAndEpisodeAndSeries(aMediaFile, anEpisode, aSeries):
 	if aMediaFile != None:
-		episodeSkeleton = '0{2}' if anEpisode.episode <= 9 else '{2}'
-		seasonSkeleton = '0{1}' if anEpisode.season <= 9 else '{1}'
-		fileNameSkeleton = '{0} - '+seasonSkeleton+'x'+episodeSkeleton+' [{3}]{4}'
-
 		#Get the parts of the file name i need
 		series = aSeries.title
 		season = anEpisode.season
 		episode = anEpisode.episode
 		quality = generateQualityFromMediaFile(aMediaFile)
 		extension = generateExtensionFromMediaFile(aMediaFile)
+
+		#Generate the file name skeleton
+		episodeSkeleton = '0{2}' if anEpisode.episode <= 9 else '{2}'
+		seasonSkeleton = '0{1}' if anEpisode.season <= 9 else '{1}'
+		qualitySkeleton = '{3}' if quality == '' else ' [{3}]'
+		fileNameSkeleton = '{0} - '+seasonSkeleton+'x'+episodeSkeleton+qualitySkeleton+'{4}'
+
 		return fileNameSkeleton.format(series, season, episode, quality, extension)
 	else:
 		return Exception
