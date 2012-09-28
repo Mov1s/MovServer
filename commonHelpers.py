@@ -1,29 +1,9 @@
-import string, imdb, re, os, httplib
+import string, imdb, re, httplib
 
 import models.movie as movie
 import models.series as series
 import helpers.titleHandler as titleHandler
 import helpers.settingsManager as settingsManager
-
-def isVideo(fileName):
-	result = False
-	extension = fileName[string.rfind(fileName, '.'):]
-	if extension == '.mkv':
-		result = True
-	elif extension == '.avi':
-		result = True
-	elif extension == '.mp4':
-		result = True
-	elif extension == '.ogm':
-		result = True
-	return result
-
-def isOfMovieSize(fileName):
-	return True
-	result = False
-	if os.path.getsize(fileName) >= 629145600:
-		result = True
-	return result
 
 def getSeries(fileName):
 	parsed = re.search("([Ss][\d]+[Xx_\.\s]?[Ee][Pp]?[\d]+)|([_\.\s][\d]+[Xx][\d]+[_\.\s])", fileName)

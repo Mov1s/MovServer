@@ -158,7 +158,6 @@ def createHardLinkForMediaFile(aMediaFile):
 		fullPath = aMediaFile.path
 		moviePath = aMediaFile.linkedPath
 		if not os.path.exists(moviePath):
-			print "Linked " + fullPath + " to movie path \n" + " "*4 + moviePath
 			os.link(fullPath, moviePath)
 	else:
 		return Exception
