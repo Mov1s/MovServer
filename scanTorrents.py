@@ -18,8 +18,7 @@ def main():
 
 	conn = mySql.createConnection()
 
-	pendingItems = 0
-	addedShows = []
+	addedContent = []
 	for root, dirs, files in os.walk(dirConf.contentSource):
 		for file in files:
 			fullPath = os.path.join(root, file)
@@ -32,6 +31,7 @@ def main():
 					if tvShowInfo == None:
 						#File is not a TvEpisode
 						if isOfMovieSize(fullPath):
+							print file
 							#Check to see if the movie is in a sub folder
 							#if so then do the search based on folder name instead of file name
 							if len(root) > len(dirConf.contentSource):
@@ -42,8 +42,8 @@ def main():
 
 							if len(movies) > 0:
 								mediaLinker.associateArrayOfMoviesWithMediaFile(movies, newMediaFile, conn)
-								print "Linked " + fullPath + " to movie title \n" + " "*4 + movies[0].title
-								mediaLinker.linkMediaFileToMovie(newMediaFile, movies[0], conn)
+								movieName = mediaLinker.linkMediaFileToMovie(newMediaFile, movies[0], conn)
+								addedContent.append(movieName)
 							else:
 								print "No movies for " + fullPath			
 					else:
@@ -56,14 +56,16 @@ def main():
 							seriesArray = findSeries(file)
 							if len(seriesArray) > 0:
 								mediaLinker.associateArrayOfSeriesWithSeriesAlias(seriesArray, aSeriesAlias)
-								mediaLinker.linkMediaFileToSeries(newMediaFile, seriesArray[0])
+								episodeName = mediaLinker.linkMediaFileToSeries(newMediaFile, seriesArray[0])
+								addedContent.append(episodeName)
 								print "Linked " + fullPath + " to new series \n" + " "*4 + seriesArray[0].title
 							else:
 								print "No series for " + fullPath
 						else:
 							anEpisode = mediaLinker.associateEpisodeWithSeriesAlias(anEpisode, aSeriesAlias)
 							aSeries = series.getActiveBySeriesAliasId(aSeriesAlias.id, conn)
-							mediaLinker.linkMediaFileToSeries(newMediaFile, aSeries)
+							episodeName = mediaLinker.linkMediaFileToSeries(newMediaFile, aSeries)
+							addedContent.append(episodeName)
 							print "Linked " + fullPath + " to already existing series \n" + " "*4 + aSeries.title
 
 
@@ -91,9 +93,7 @@ def main():
 							# 	os.link(fullPath, episodePath)
 							# 	addedShows.append(formatedEpisode)
 	conn.close()
-	if pendingItems > 0:
-		sendXbmcNotification("Pending Content", str(pendingItems)+" item(s) pending approval.")
-	elif len(addedShows) == 1:
-		sendXbmcNotification("New Content", addedShows[0]+" was added to the library.")
-	elif len(addedShows) > 1:
-		sendXbmcNotification("New Content", str(len(addedShows))+" new items were added to the library.")
+	if len(addedContent) == 1:
+		sendXbmcNotification("New Content", addedContent[0]+" was added to the library.")
+	elif len(addedContent) > 1:
+		sendXbmcNotification("New Content", str(len(addedContent))+" new items were added to the library.")
