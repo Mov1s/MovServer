@@ -11,7 +11,7 @@ def printUsage():
 
 #Print the valid arguments that may be passed
 def printValidArguments():
-	print 'Valid arguments are:\n\t s: Scan torrent folder\n\t g: Gather server information\n\t b: Create picture backdrops'
+	print 'Valid arguments are:\n\t s: Scan torrent folder\n\t r: Reset the database to a completley clean state\n\t b: Create picture backdrops'
 
 #Grab all the user passed arguments and check them for validity
 #Return: the argument
@@ -25,7 +25,7 @@ def grabArguments():
 			printUsage()
 		else:
 			argument = sys.argv[1][1:]
-			if argument != 's' and argument != 'g' and argument != 'b':
+			if argument != 's' and argument != 'r' and argument != 'b':
 				printValidArguments()
 	else:
 		printUsage()
@@ -45,7 +45,7 @@ def main():
 	argument = grabArguments()
 	if argument == 's':
 		scanTorrents.main()
-	elif argument == 'g':
+	elif argument == 'r':
 		systemConf = settingsManager.systemSettings()
 		databaseSetup.resetTables(systemConf)
 		databaseSetup.createTables(systemConf)
