@@ -100,14 +100,14 @@ def fileIsVideo(fileName):
 	return result
 
 def fileIsOfMovieSize(fileName):
-	return True
+	#return True
 	result = False
 	if os.path.getsize(fileName) >= 629145600:
 		result = True
 	return result
 
 def fileIsOfEpisodeSize(fileName):
-	return True
+	#return True
 	result = False
 	if os.path.getsize(fileName) >= 104857600:
 		result = True

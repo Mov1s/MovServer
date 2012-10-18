@@ -78,21 +78,9 @@ def resolveTies(movieArray):
 				tiedMovies.append(thisMovie)
 
 def percentageOfTitleMatch(firstTitle, secondTitle):
-	#Format the first title for comparison
-	firstTitle = normalizeCase(firstTitle)
-	firstTitle = removeBlacklistedWords(firstTitle)
-	firstTitle = removePunctuation(firstTitle)
-	firstTitle = replaceAbbreviations(firstTitle)
-
-	#Format the second title for comparison
-	secondTitle = normalizeCase(secondTitle)
-	secondTitle = removeBlacklistedWords(secondTitle)
-	secondTitle = removePunctuation(secondTitle)
-	secondTitle = replaceAbbreviations(secondTitle)
-
-	#Split the formated titles into comparable word arrays
-	firstArray = firstTitle.split()
-	secondArray = secondTitle.split()
+	#Format the titles for comparison
+	firstArray = returnWellFormatedArrayFromTitle(firstTitle)
+	secondArray = returnWellFormatedArrayFromTitle(secondTitle)
 
 	#Replace numerals
 	firstArray = replaceNumeralsInArray(firstArray)
