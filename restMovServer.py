@@ -8,6 +8,8 @@ import models.seriesAlias as seriesAlias
 import models.episode as episode
 import helpers.mediaLinker as mediaLinker
 
+#Movie Routes -------------------------------------------------------------------
+#--------------------------------------------------------------------------------
 @route('/library/movies', method='GET')
 def getLibraryMovies():
 	allLibraryMovies = movie.getFromLibrary()
@@ -42,7 +44,18 @@ def getLibraryMovieCreateLink(movieId):
 	linkedMovie = movie.getByMovieId(movieId)
 	linkedMediaFile = mediaFile.getByMediaFileId(linkedMovie.associatedMediaFileId)
 	mediaLinker.linkMediaFileToMovie(linkedMediaFile, linkedMovie)
-	return 'Success'
+	return linkedMovie.asJson()
+
+@route('/library/movies/<movieId>/sibblings', method='POST')
+def postLibraryMovie(movieId):
+	movieTitle = request.json['title']
+	movieYear = request.json['year']
+
+	linkedMovie = movie.getByMovieId(movieId)
+	linkedMediaFile = mediaFile.getByMediaFileId(linkedMovie.associatedMediaFileId)
+	newMovie = movie.create(movieTitle, movieYear).save()
+	mediaLinker.associateMovieWithMediaFile(newMovie, linkedMediaFile)
+	return newMovie.asJson()
 
 #TV Show Routes -----------------------------------------------------------------
 #--------------------------------------------------------------------------------
