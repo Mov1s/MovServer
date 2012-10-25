@@ -46,10 +46,11 @@ def removeLeadingTheInArray(titleArray):
 def orderMovieArrayByMatchingTitle(movieArray, title):
 	sortedMovies = []
 	for m in movieArray:
-		# titleWithYear = '{0} {1}'.format(m.title, m.year)
 		pMatch = percentageOfTitleMatch(m.title, title)
 		sortedMovies.append([pMatch, m])
-		sortedMovies.sort(reverse=True)
+	sortedMovies.sort(reverse=True)
+	sortedMovies = resolveTies(sortedMovies, title)
+
 	returnMovies = []
 	for m in sortedMovies:
 		returnMovies.append(m[1])
@@ -66,16 +67,40 @@ def orderTvArrayByMatchingSeries(seriesArray, aSeries):
 		returnSeries.append(s[1])
 	return returnSeries
 
+#Debug printing functions -------------------------------------------------------
+#--------------------------------------------------------------------------------
+def printPercentageArray(percentageMatchedMovieArray, sortedPercentageMatchedMovieArray, reorderedMatchedMovieArray):
+	movieFormat = '{0} {1} ({2})'
+	for i in range(0, len(percentageMatchedMovieArray)):
+		us = percentageMatchedMovieArray[i]
+		s = sortedPercentageMatchedMovieArray[i]
+		ro = reorderedMatchedMovieArray[i]
+		usf = movieFormat.format(round(us[0], 2), us[1].title, us[1].year)
+		sf = movieFormat.format(round(s[0], 2), s[1].title, s[1].year)
+		rof = movieFormat.format(round(ro[0], 2), ro[1].title, ro[1].year)
+
+		print usf, ' ' * (50 - len(usf)), sf, ' ' * (50 - len(sf)), rof 
+
 #Ranking algorithm functions ----------------------------------------------------
 #--------------------------------------------------------------------------------
-#Needs some work
-def resolveTies(movieArray):
-	for i in range(0, len(movieArray)):
-		if i+1 < len(movieArray):
-			thisMovie = movieArray[i]
-			nextMovie = movieArray[i+1]
-			if thisMovie.title == nextMovie.title:
-				tiedMovies.append(thisMovie)
+#Breaks ties by promoting movies that are in the right year
+def resolveTies(percentageMatchedMovieArray, title):
+	tiedMovies = []
+	for i in range(0, len(percentageMatchedMovieArray)):
+		if i+1 < len(percentageMatchedMovieArray):
+			thisMovie = percentageMatchedMovieArray[i]
+			nextMovie = percentageMatchedMovieArray[i+1]
+			tiedMovies.append(thisMovie)
+			if thisMovie[0] != nextMovie[0]:
+				break
+	reorderedMovies = list(tiedMovies)
+	for m in tiedMovies:
+		if(str(m[1].year) in title):
+			reorderedMovies.remove(m)
+			reorderedMovies.insert(0, m)
+	for i in range(0, len(reorderedMovies)):
+		percentageMatchedMovieArray[i] = reorderedMovies[i]
+	return percentageMatchedMovieArray
 
 def percentageOfTitleMatch(firstTitle, secondTitle):
 	#Format the titles for comparison

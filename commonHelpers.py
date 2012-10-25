@@ -36,7 +36,7 @@ def findImdbSeriesLikeTitle(fileName):
 		partialFileName = titleStringFromIndexOfTitleArray(fileNameArray, i)
 		imdbResults = imdbContext.search_movie(partialFileName)
 
-		loop = 3 if len(imdbResults) >= 3 else len(imdbResults)
+		loop = 10 if len(imdbResults) >= 10 else len(imdbResults)
 		for j in range(0, loop):
 			imdbResult = imdbResults[j]
 			if imdbResult['kind'] == 'tv series':
@@ -59,7 +59,7 @@ def findImdbMoviesLikeTitle(fileName):
 		partialFileName = titleStringFromIndexOfTitleArray(fileNameArray, i)
 		imdbResults = imdbContext.search_movie(partialFileName)
 
-		loop = 3 if len(imdbResults) >= 3 else len(imdbResults)
+		loop = 15 if len(imdbResults) >= 15 else len(imdbResults)
 		for j in range(0, loop):
 			imdbResult = imdbResults[j]
 			newMovie = movie.create(imdbResult['title'])
