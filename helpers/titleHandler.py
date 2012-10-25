@@ -47,7 +47,7 @@ def orderMovieArrayByMatchingTitle(movieArray, title):
 	sortedMovies = []
 	for m in movieArray:
 		pMatch = percentageOfTitleMatch(m.title, title)
-		sortedMovies.append([pMatch, m])
+		sortedMovies.append([pMatch, m])	
 	sortedMovies.sort(reverse=True)
 	sortedMovies = resolveTies(sortedMovies, title)
 
@@ -117,16 +117,21 @@ def percentageOfTitleMatch(firstTitle, secondTitle):
 		firstArray = secondArray
 		secondArray = tempArray
 
+	#Count how many words are in each title
+	lengthOfFirstTitle = len(firstArray)
+	lengthOfSecondTitle = len(secondArray)
+
 	#Count the matching words between the two titles
 	matchingWordCount = 0
 	for word in firstArray:
 		if word in secondArray:
 			matchingWordCount += 1
+			secondArray.remove(word)
 
 	# print firstTitle, ' ', secondTitle
-	# print '\t({0} / {1})*({2} / {3})'.format(matchingWordCount, len(firstArray), matchingWordCount, len(secondArray))
-	percentFirstMatch = float(matchingWordCount) / len(firstArray)
-	percentSecondMatch = float(matchingWordCount) / len(secondArray)
+	# print '\t({0} / {1})*({2} / {3})'.format(matchingWordCount, lengthOfFirstTitle, matchingWordCount, lengthOfSecondTitle)
+	percentFirstMatch = float(matchingWordCount) / lengthOfFirstTitle
+	percentSecondMatch = float(matchingWordCount) / lengthOfSecondTitle
 	# print '\t', str(percentFirstMatch * percentSecondMatch)
 	#Return the percentage of matching words between the two titles
 	return percentFirstMatch * percentSecondMatch

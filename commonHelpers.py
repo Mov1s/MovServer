@@ -71,7 +71,6 @@ def findImdbMoviesLikeTitle(fileName):
 					titles[titleIndex] = True
 					movies.append(newMovie)
 			except UnicodeEncodeError:
-				print "UnicodeEncodeError"
 				continue
 			lastSuccessfulTitle = partialFileName
 	movies = titleHandler.orderMovieArrayByMatchingTitle(movies, lastSuccessfulTitle)
