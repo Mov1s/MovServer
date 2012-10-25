@@ -20,7 +20,6 @@ def main():
 		for file in files:
 			fullPath = os.path.join(root, file)
 			if isNewTvEpisode(file, root, conn):
-				print file
 				tvShowInfo = getSeries(file)
 				newMediaFile = mediaFile.createWithPath(fullPath).save(conn)
 				anEpisode = episode.create(tvShowInfo[1], tvShowInfo[2])
@@ -34,7 +33,7 @@ def main():
 						mediaLinker.associateArrayOfSeriesWithSeriesAlias(seriesArray, aSeriesAlias)
 						episodeName = mediaLinker.linkMediaFileToSeries(newMediaFile, seriesArray[0])
 						addedContent.append(episodeName)
-						print "\t", episodeName
+						print file, '  ->  ', episodeName
 					else:
 						print "\t", "No series for " + file
 				else:
@@ -42,9 +41,8 @@ def main():
 					aSeries = series.getActiveBySeriesAliasId(aSeriesAlias.id, conn)
 					episodeName = mediaLinker.linkMediaFileToSeries(newMediaFile, aSeries)
 					addedContent.append(episodeName)
-					print "\t", episodeName
+					print file, '  ->  ', episodeName
 			elif isNewMovie(file, root, conn):
-				print file
 				newMediaFile = mediaFile.createWithPath(fullPath).save(conn)
 				#Check to see if the movie is in a sub folder
 				#if so then do the search based on folder name instead of file name
@@ -58,7 +56,7 @@ def main():
 					mediaLinker.associateArrayOfMoviesWithMediaFile(movies, newMediaFile, conn)
 					movieName = mediaLinker.linkMediaFileToMovie(newMediaFile, movies[0], conn)
 					addedContent.append(movieName)
-					print "\t", movieName
+					print file, '  ->  ', movieName
 				else:
 					print "\t", "No movies for " + file			
 
@@ -100,7 +98,7 @@ def fileIsVideo(fileName):
 	return result
 
 def fileIsOfMovieSize(fileName):
-	#return True
+	# return True
 	result = False
 	if os.path.getsize(fileName) >= 629145600:
 		result = True
