@@ -63,8 +63,10 @@ def main():
 	conn.close()
 	if len(addedContent) == 1:
 		sendXbmcNotification("New Content", addedContent[0]+" was added to the library.")
+		sendXbmcLibraryUpdate()
 	elif len(addedContent) > 1:
 		sendXbmcNotification("New Content", str(len(addedContent))+" new items were added to the library.")
+		sendXbmcLibraryUpdate()
 
 #Helpers for checking media type ------------------------------------------------
 #--------------------------------------------------------------------------------
@@ -98,7 +100,7 @@ def fileIsVideo(fileName):
 	return result
 
 def fileIsOfMovieSize(fileName):
-	# return True
+	#return True
 	result = False
 	if os.path.getsize(fileName) >= 629145600:
 		result = True

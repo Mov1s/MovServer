@@ -100,5 +100,16 @@ def sendXbmcNotification(title, message):
 	except:
 		print "Had a problem sending message to XBMC"
 
+def sendXbmcLibraryUpdate():
+	try:
+		settings = settingsManager.systemSettings()
+		conn = httplib.HTTPConnection('localhost', settings.xbmcPort, timeout=1)
+		conn.connect()
+		conn.request('GET', '/xbmcCmds/xbmcHttp?command=ExecBuiltIn(UpdateLibrary(video))')
+		r = conn.getresponse()
+		conn.close()
+	except:
+		print "Had a problem updating XBMC's library"
+
 def titleStringFromIndexOfTitleArray(titleArray, index):
 	return string.replace(','.join(titleArray[0:index+1]), ',', ' ')
