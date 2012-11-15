@@ -83,8 +83,6 @@ class systemSettings():
 				if(len(lineParts) == 2):
 					setting = lineParts[0]
 					value = lineParts[1]
-					print setting, str(len(value)), ' .', value, '.'
-
 					if setting == 'mysqlUser':
 						self.mysqlUser = value.replace('\n', '').strip() if len(value) != 1 else 'root'
 					elif setting == 'mysqlPass':

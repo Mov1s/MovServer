@@ -57,6 +57,13 @@ def postLibraryMovie(movieId):
 	mediaLinker.associateMovieWithMediaFile(newMovie, linkedMediaFile)
 	return newMovie.asJson()
 
+@route('/library/movies/<movieId>', method='DELETE')
+def deleteLibraryMovie(movieId):
+	linkedMovie = movie.getByMovieId(movieId)
+	linkedMediaFile = mediaFile.getByMediaFileId(linkedMovie.associatedMediaFileId)
+	mediaLinker.removeHardLinkForMediaFile(linkedMediaFile)
+	return "Successfully Deleted Movie"
+
 #TV Show Routes -----------------------------------------------------------------
 #--------------------------------------------------------------------------------
 @route('/library/series', method='GET')
@@ -126,4 +133,4 @@ def postSeriesAlias():
 	aSeries = series.getBySeriesId(aSeries.id)
 	return aSeries.asJson()
 
-run(host='192.168.0.102', port=9000)
+run(host='localhost', port=9000)
