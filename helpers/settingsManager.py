@@ -7,7 +7,6 @@ class directorySettings():
 	movieDestination = ''
 	tvDestination = ''
 	contentSource = ''
-	crawlerTorrentSource = ''
 	torrentWatchDirectory = ''
 
 	def __init__(self):
@@ -21,26 +20,25 @@ class directorySettings():
 
 		if os.path.exists(directoryConfigFile):
 			f = open(directoryConfigFile, 'r')
-			line = f.readline().split('=')
-			self.contentSource = line[1].replace('\n', '').strip() if len(line) == 2 else ''
+			linesArray = f.readlines()
+			for line in linesArray:
+				lineParts = line.split('=')
+				if(len(lineParts) == 2):
+					setting = lineParts[0]
+					value = lineParts[1]
 
-			line = f.readline().split('=')
-			self.movieDestination = line[1].replace('\n', '').strip() if len(line) == 2 else ''
-
-			line = f.readline().split('=')
-			self.tvDestination = line[1].replace('\n', '').strip() if len(line) == 2 else ''
-
-			line = f.readline().split('=')
-			self.pictureSource = line[1].replace('\n', '').strip() if len(line) == 2 else ''
-
-			line = f.readline().split('=')
-			self.backdropDestination = line[1].replace('\n', '').strip() if len(line) == 2 else ''
-
-			line = f.readline().split('=')
-			self.crawlerTorrentSource = line[1].replace('\n', '').strip() if len(line) == 2 else ''
-
-			line = f.readline().split('=')
-			self.torrentWatchDirectory = line[1].replace('\n', '').strip() if len(line) == 2 else ''
+					if setting == 'contentSource':
+						self.contentSource = value.replace('\n', '').strip()
+					elif setting == 'moviesDestination':
+						self.movieDestination = value.replace('\n', '').strip()
+					elif setting == 'tvDestination':
+						self.tvDestination = value.replace('\n', '').strip()
+					elif setting == 'pictureSource':
+						self.pictureSource = value.replace('\n', '').strip()
+					elif setting == 'backdropDestination':
+						self.backdropDestination = value.replace('\n', '').strip()
+					elif setting == 'torrentWatchDirectory':
+						self.torrentWatchDirectory = value.replace('\n', '').strip()
 			f.close()
 	
 	#Write all the settings to 'directorySettings.conf'
@@ -56,7 +54,6 @@ class directorySettings():
 		f.write('tvDestination=' + self.tvDestination + '\n')
 		f.write('pictureSource=' + self.pictureSource + '\n')
 		f.write('backdropDestination=' + self.backdropDestination + '\n')
-		f.write('crawlerTorrentSource=' + self.crawlerTorrentSource + '\n')
 		f.write('torrentWatchDirectory=' + self.torrentWatchDirectory + '\n')
 		f.close()
 
@@ -80,23 +77,26 @@ class systemSettings():
 
 		if os.path.exists(systemConfigFile):
 			f = open(systemConfigFile, 'r')
-			line = f.readline().split('=')
-			self.mysqlUser = line[1].replace('\n', '').strip() if len(line) == 2 else 'root'
+			linesArray = f.readlines()
+			for line in linesArray:
+				lineParts = line.split('=')
+				if(len(lineParts) == 2):
+					setting = lineParts[0]
+					value = lineParts[1]
+					print setting, str(len(value)), ' .', value, '.'
 
-			line = f.readline().split('=')
-			self.mysqlPassword = line[1].replace('\n', '').strip() if len(line) == 2 else ''
-
-			line = f.readline().split('=')
-			self.mysqlServer = line[1].replace('\n', '').strip() if len(line) == 2 else 'localhost'
-
-			line = f.readline().split('=')
-			self.cgiDirectory = line[1].replace('\n', '').strip() if len(line) == 2 else '/var/www/cgi-bin'
-
-			line = f.readline().split('=')
-			self.wwwDirectory = line[1].replace('\n', '').strip() if len(line) == 2 else '/var/www'
-
-			line = f.readline().split('=')
-			self.xbmcPort = int(line[1].replace('\n', '').strip()) if len(line) == 2 else 8080
+					if setting == 'mysqlUser':
+						self.mysqlUser = value.replace('\n', '').strip() if len(value) != 1 else 'root'
+					elif setting == 'mysqlPass':
+						self.mysqlPassword = value.replace('\n', '').strip()
+					elif setting == 'mysqlServer':
+						self.mysqlServer = value.replace('\n', '').strip() if len(value) != 1 else 'localhost'
+					elif setting == 'cgiDir':
+						self.cgiDirectory = value.replace('\n', '').strip() if len(value) != 1 else '/var/www/cgi-bin'
+					elif setting == 'wwwDir':
+						self.wwwDirectory = value.replace('\n', '').strip() if len(value) != 1 else '/var/www'
+					elif setting == 'xbmcPort':
+						self.xbmcPort = value.replace('\n', '').strip() if len(value) != 1 else 8080
 			f.close()
 	
 	def writeSettingsToFile(self):
