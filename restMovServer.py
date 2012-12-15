@@ -8,6 +8,18 @@ import models.seriesAlias as seriesAlias
 import models.episode as episode
 import helpers.mediaLinker as mediaLinker
 
+#Media File Routes --------------------------------------------------------------
+#--------------------------------------------------------------------------------
+@route('/mediafiles', method='GET')
+def getMediaFiles():
+	allMediaFiles = mediaFile.get()
+	jsonReturn = {}
+	mediaFileArray = []
+	for mf in allMediaFiles:
+		mediaFileArray.append(mf.asJson())
+	jsonReturn['mediaFiles'] = mediaFileArray
+	return jsonReturn
+
 #Movie Routes -------------------------------------------------------------------
 #--------------------------------------------------------------------------------
 @route('/library/movies', method='GET')

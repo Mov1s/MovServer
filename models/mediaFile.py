@@ -29,6 +29,13 @@ class mediaFile():
 
 		return self
 
+	def asJson(self):
+		jsonResult = {}
+		jsonResult['id'] = self.id
+		jsonResult['path'] = self.path
+		jsonResult['linkedPath'] = self.linkedPath
+		return jsonResult
+
 #Returns a mediaFile with a given path
 #path: the path of the media file in question
 #conn: the connection to use for the database query, if none provided a default is created
@@ -60,6 +67,23 @@ def getByMediaFileId(mediaFileId, conn = None):
 		fileInfo = cursor.fetchall()[0]
 		movieResult = createFromArray(fileInfo)
 		return movieResult
+
+#Returns all media files
+#conn: the connection to use for the database query, if none provided a default is created
+def get(conn = None):
+	if conn == None:
+		conn = mySql.createConnection()
+	cursor = conn.cursor()
+
+	cursor.execute("SELECT * FROM MediaFiles mf")
+	if cursor.rowcount == 0:
+		return None
+	else:
+		mediaFileListResult = []
+		for mediaFileInfoArray in cursor.fetchall():
+			mediaFileListResult = createFromArray(mediaFileInfoArray)
+			mediaFileListResult.append(mediaFileListResult)
+		return mediaFileListResult
 
 #Create and return a new mediaFile from an array formated by the database
 #mediaFileInfoArray: an array formated as a database return containing media file details
