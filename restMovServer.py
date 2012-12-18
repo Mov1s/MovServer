@@ -59,7 +59,7 @@ def getLibraryMovieCreateLink(movieId):
 	return linkedMovie.asJson()
 
 @route('/library/movies/<movieId>/sibblings', method='POST')
-def postLibraryMovie(movieId):
+def postLibraryMovieAsSibbling(movieId):
 	movieTitle = request.json['title']
 	movieYear = request.json['year']
 
@@ -67,6 +67,20 @@ def postLibraryMovie(movieId):
 	linkedMediaFile = mediaFile.getByMediaFileId(linkedMovie.associatedMediaFileId)
 	newMovie = movie.create(movieTitle, movieYear).save()
 	mediaLinker.associateMovieWithMediaFile(newMovie, linkedMediaFile)
+	return newMovie.asJson()
+
+@route('/library/movies', method='POST')
+def postLibraryMovie():
+	movieTitle = request.json['title']
+	movieYear = request.json['year']
+	linkedMediaFileId = request.json['associatedMediaFileId']
+
+	linkedMediaFile = mediaFile.getByMediaFileId(linkedMediaFileId)
+	newMovie = movie.create(movieTitle, movieYear).save()
+	mediaLinker.associateMovieWithMediaFile(newMovie, linkedMediaFile)
+
+	if 'active' in request.json and request.json['active'] == 1:
+		mediaLinker.linkMediaFileToMovie(linkedMediaFile, newMovie)
 	return newMovie.asJson()
 
 @route('/library/movies/<movieId>', method='DELETE')
