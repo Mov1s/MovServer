@@ -75,7 +75,7 @@ def getBySeriesAliasId(seriesAliasId, conn = None):
 
 	cursor.execute("SELECT * FROM Episodes WHERE FK_SeriesAlias_id = %s", (seriesAliasId))
 	if cursor.rowcount == 0:
-		return None
+		return []
 	else:
 		episodeListResult = []
 		for episodeInfoArray in cursor.fetchall():

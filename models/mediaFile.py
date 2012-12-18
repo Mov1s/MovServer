@@ -77,12 +77,12 @@ def get(conn = None):
 
 	cursor.execute("SELECT * FROM MediaFiles mf")
 	if cursor.rowcount == 0:
-		return None
+		return []
 	else:
 		mediaFileListResult = []
 		for mediaFileInfoArray in cursor.fetchall():
-			mediaFileListResult = createFromArray(mediaFileInfoArray)
-			mediaFileListResult.append(mediaFileListResult)
+			mediaFileResult = createFromArray(mediaFileInfoArray)
+			mediaFileListResult.append(mediaFileResult)
 		return mediaFileListResult
 
 #Create and return a new mediaFile from an array formated by the database

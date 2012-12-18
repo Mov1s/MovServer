@@ -66,7 +66,7 @@ def getBySeriesAliasId(seriesAliasId, conn = None):
 
 	cursor.execute("SELECT * FROM Series WHERE FK_SeriesAlias_id = %s", (seriesAliasId))
 	if cursor.rowcount == 0:
-		return None
+		return []
 	else:
 		seriesListResult = []
 		for seriesInfoArray in cursor.fetchall():
@@ -99,7 +99,7 @@ def getFromLibrary(conn = None):
 
 	cursor.execute("SELECT * FROM Series s WHERE s.active = 1")
 	if cursor.rowcount == 0:
-		return None
+		return []
 	else:
 		seriesListResult = []
 		for seriesInfoArray in cursor.fetchall():
@@ -121,7 +121,7 @@ def getSibblingsOfSeriesId(seriesId, conn = None):
 
 	cursor.execute("SELECT * FROM Series s WHERE s.FK_SeriesAlias_id = %s", (lookupSeries.associatedSeriesAliasId))
 	if cursor.rowcount == 0:
-		return None
+		return []
 	else:
 		seriesListResult = []
 		for seriesInfoArray in cursor.fetchall():

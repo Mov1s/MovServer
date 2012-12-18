@@ -75,7 +75,7 @@ def get(conn = None):
 
 	cursor.execute("SELECT * FROM SeriesAlias")
 	if cursor.rowcount == 0:
-		return None
+		return []
 	else:
 		seriesAliasListResult = []
 		for seriesAliasInfoArray in cursor.fetchall():

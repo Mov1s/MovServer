@@ -58,7 +58,7 @@ def getByMediaFilePath(mediaFilePath, conn = None):
 
 	cursor.execute("SELECT m FROM MediaFiles mf LEFT JOIN Movies m ON mf.id = m.FK_MediaFile_id WHERE mf.path = %s", (mediaFilePath))
 	if cursor.rowcount == 0:
-		return None
+		return []
 	else:
 		movieListResult = []
 		for movieInfoArray in cursor.fetchall():
@@ -76,7 +76,7 @@ def getByMediaFileId(mediaFileId, conn = None):
 
 	cursor.execute("SELECT * FROM Movies m WHERE m.FK_MediaFile_id = %s", (mediaFileId))
 	if cursor.rowcount == 0:
-		return None
+		return []
 	else:
 		movieListResult = []
 		for movieInfoArray in cursor.fetchall():
@@ -109,7 +109,7 @@ def getFromLibrary(conn = None):
 
 	cursor.execute("SELECT * FROM Movies m WHERE m.active = 1")
 	if cursor.rowcount == 0:
-		return None
+		return []
 	else:
 		movieListResult = []
 		for movieInfoArray in cursor.fetchall():
@@ -131,7 +131,7 @@ def getSibblingsOfMovieId(movieId, conn = None):
 
 	cursor.execute("SELECT * FROM Movies m WHERE m.FK_MediaFile_id = %s", (lookupMovie.associatedMediaFileId))
 	if cursor.rowcount == 0:
-		return None
+		return []
 	else:
 		movieListResult = []
 		for movieInfoArray in cursor.fetchall():
