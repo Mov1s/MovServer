@@ -159,4 +159,4 @@ def postSeriesAlias():
 	aSeries = series.getBySeriesId(aSeries.id)
 	return aSeries.asJson()
 
-run(host='localhost', port=9000)
+run(host='192.168.0.100', port=9000)

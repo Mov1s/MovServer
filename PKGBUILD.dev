@@ -3,7 +3,7 @@
 # Rub-a-dub-dub
 
 pkgname=movserver
-pkgver=1.8
+pkgver=3.1.1
 pkgrel=1
 pkgdesc="MovServer media library manager testing branch"
 provides=('movserver')
@@ -19,7 +19,7 @@ optdepends=()
 sha256sums=('')
 
 _gitname='Mov1s'
-_gitbranch='v2'
+_gitbranch='v3-standalone'
 _gitroot='git://github.com/Mov1s/MovServer.git'
 
 build() {
@@ -30,7 +30,7 @@ build() {
 	_binpath="${pkgdir}/usr/bin"
 
 	install -d $_installpath
-	install -D $_gitpath $_installpath
+	cp $_gitpath $_installpath
 
 	chmod 755 $_installpath/movserver
 
