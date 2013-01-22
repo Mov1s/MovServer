@@ -65,6 +65,7 @@ class systemSettings():
 	xbmcPort = 8080
 	cgiDirectory = ''
 	wwwDirectory = ''
+	tmdbApiKey = ''
 
 	def __init__(self):
 		self.readSettingsFromFile()
@@ -95,6 +96,8 @@ class systemSettings():
 						self.wwwDirectory = value.replace('\n', '').strip() if len(value) != 1 else '/var/www'
 					elif setting == 'xbmcPort':
 						self.xbmcPort = value.replace('\n', '').strip() if len(value) != 1 else 8080
+					elif setting == 'tmdbApiKey':
+						self.tmdbApiKey = value.replace('\n', '').strip()
 			f.close()
 	
 	def writeSettingsToFile(self):

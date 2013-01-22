@@ -1,5 +1,5 @@
 import string, imdb, re, httplib
-
+import tmdb3
 import models.movie as movie
 import models.series as series
 import helpers.titleHandler as titleHandler
@@ -49,7 +49,8 @@ def findImdbSeriesLikeTitle(fileName):
 	return serieses
 
 def findImdbMoviesLikeTitle(fileName):
-	imdbContext = imdb.IMDb()
+	settings = settingsManager.systemSettings()
+	tmdb3.set_key(settings.tmdbApiKey)
 	fileNameArray = titleHandler.returnWellFormatedArrayFromTitle(fileName)
 
 	titles = {}
@@ -57,14 +58,14 @@ def findImdbMoviesLikeTitle(fileName):
 	lastSuccessfulTitle = ''
 	for i in range(0, len(fileNameArray)):
 		partialFileName = titleStringFromIndexOfTitleArray(fileNameArray, i)
-		imdbResults = imdbContext.search_movie(partialFileName)
+		tmdbResults = tmdb3.searchMovie(partialFileName)
 
-		loop = 15 if len(imdbResults) >= 15 else len(imdbResults)
+		loop = 15 if len(tmdbResults) >= 15 else len(tmdbResults)
 		for j in range(0, loop):
-			imdbResult = imdbResults[j]
-			newMovie = movie.create(imdbResult['title'])
-			if imdbResult.has_key('year'):
-				newMovie.year = imdbResult['year']
+			tmdbResult = tmdbResults[j]
+			newMovie = movie.create(tmdbResult.title)
+			if tmdbResult.releasedate:
+				newMovie.year = tmdbResult.releasedate.year
 			try:
 				titleIndex = '{0} {1}'.format(newMovie.title, newMovie.year)
 				if not titleIndex in titles:
