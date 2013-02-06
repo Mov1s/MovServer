@@ -1,4 +1,4 @@
-import string, imdb, re, httplib
+import string, imdb, tvdb_api, re, httplib
 
 import models.movie as movie
 import models.series as series
@@ -26,25 +26,26 @@ def getSeries(fileName):
 	return [series, season, episode]
 
 def findImdbSeriesLikeTitle(fileName):
-	imdbContext = imdb.IMDb()
+	tvdbContext = tvdb_api.Tvdb()
 	fileNameArray = titleHandler.returnWellFormatedArrayFromTitle(fileName)
 
 	seriesTitles = {}
 	serieses = []
 	lastSuccessfulSeries = ''
-	for i in range(0, len(fileNameArray)):		
+	for i in range(0, len(fileNameArray)):	
 		partialFileName = titleStringFromIndexOfTitleArray(fileNameArray, i)
-		imdbResults = imdbContext.search_movie(partialFileName)
-
-		loop = 10 if len(imdbResults) >= 10 else len(imdbResults)
-		for j in range(0, loop):
-			imdbResult = imdbResults[j]
-			if imdbResult['kind'] == 'tv series':
-				newSeries = series.create(imdbResult['title'])
-				if not newSeries.title in seriesTitles:
-					seriesTitles[newSeries.title] = True
-					serieses.append(newSeries)
+		try:
+			print partialFileName
+			tvdbResult = tvdbContext[partialFileName]
+			print tvdbResult
+			newSeries = series.create(tvdbResult['seriesname'])
+			if not newSeries.title in seriesTitles:
+				seriesTitles[newSeries.title] = True
+				serieses.append(newSeries)
 				lastSuccessfulSeries = partialFileName
+		except:
+			continue
+				
 	serieses = titleHandler.orderTvArrayByMatchingSeries(serieses, lastSuccessfulSeries)
 	return serieses
 
