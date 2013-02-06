@@ -3,7 +3,7 @@
 # Rub-a-dub-dub
 
 pkgname=movserver
-pkgver=3.1.1
+pkgver=20130206
 pkgrel=1
 pkgdesc="MovServer media library manager testing branch"
 provides=('movserver')
@@ -12,7 +12,7 @@ replaces=()
 arch=('i686' 'x86_64')
 url=""
 license=('other')
-depends=('python2' 'mysql' 'mysql-python' 'imdbpy' 'python-imaging' 'pygtk')
+depends=('python2' 'mysql' 'mysql-python' 'python2-pip' 'python-imaging')
 makedepends=('git')
 
 optdepends=()
@@ -23,6 +23,7 @@ _gitbranch='v3-standalone'
 _gitroot='git://github.com/Mov1s/MovServer.git'
 
 build() {
+	#Clone the MovServer code
 	git clone -b $_gitbranch $_gitroot
 	
 	_installpath="${pkgdir}/usr/share/movserver"
@@ -30,10 +31,14 @@ build() {
 	_binpath="${pkgdir}/usr/bin"
 
 	install -d $_installpath
-	cp $_gitpath $_installpath
+	cp -a $_gitpath $_installpath
 
 	chmod 755 $_installpath/movserver
 
 	install -d $_binpath
 	ln -s /usr/share/movserver/movserver $_binpath/movserver
+
+	#Install some python modules
+	pip2 install tvdb_api
+	pip2 install tmdb3
 }

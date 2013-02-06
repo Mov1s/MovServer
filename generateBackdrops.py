@@ -1,9 +1,9 @@
 import sys, os
-import commonSettings
+import helpers.settingsManager as settingsManager
 from PIL import Image
 
 def main():
-	dirConf = commonSettings.directorySettings()
+	dirConf = settingsManager.directorySettings()
 	pictureDestination = dirConf.backdropDestination
 	pictureSource = dirConf.pictureSource
 
