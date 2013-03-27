@@ -180,7 +180,7 @@ def createSeasonFolderForMediaFile(aMediaFile):
 def generateHardLinkNameFromMediaFileAndMovie(aMediaFile, aMovie):
 	if aMediaFile != None:
 		#Get the parts of the file name i need
-		title = aMovie.title
+		title = aMovie.title.replace(':', '')
 		year = aMovie.year
 		quality = generateQualityFromMediaFile(aMediaFile)
 		extension = generateExtensionFromMediaFile(aMediaFile)
