@@ -1,59 +1,39 @@
-import sys
-import os
+import bottle
 import scanTorrents
-import generateBackdrops
 import databaseSetup
+import argparse
 import helpers.settingsManager as settingsManager
+import helpers.restServer
 
-#Print the correct usage syntax
-def printUsage():
-	print 'Usage: movServer [-argument]'
+#Set up the acceptable arguments
+parser = argparse.ArgumentParser(description = 'Manage an unruly torrent library')
+parser.add_argument('-s, --scan', dest = 'scan', action = 'store_true', help = 'scans your content folders for new media')
+parser.add_argument('-r, --reset', dest = 'reset', action = 'store_true', help = 'resets the database tables')
+parser.add_argument('-w, --web', dest = 'web', action = 'store_true', help = 'runs the REST API for interacting with your scanned library')
+args = parser.parse_args()
 
-#Print the valid arguments that may be passed
-def printValidArguments():
-	print 'Valid arguments are:\n\t s: Scan torrent folder\n\t r: Reset the database to a completley clean state\n\t b: Create picture backdrops'
-
-#Grab all the user passed arguments and check them for validity
-#Return: the argument
-def grabArguments():
-	if len(sys.argv) < 2:
-		argument = None
-	elif len(sys.argv) > 2:
-		printUsage()
-	elif len(sys.argv[1]) > 1:
-		if sys.argv[1][0] != '-':
-			printUsage()
-		else:
-			argument = sys.argv[1][1:]
-			if argument != 's' and argument != 'r' and argument != 'b':
-				printValidArguments()
-	else:
-		printUsage()
-	return argument
-
-#Check if this is the first run of movServer
-def isFirstRun():
-	home = os.getenv('HOME')
-	configDir = '.movServer'
-	if os.path.exists(os.path.join(home, configDir)):
-		return False
-	else:
-		return True
+#Get the system configuration
+systemConf = settingsManager.systemSettings()
 
 #Main program execution 
 def main():
-	argument = grabArguments()
-	if argument == 's':
+	#Install on the first run
+	if not databaseSetup.databaseExists(systemConf):
+		print "Creating database tables for first run..."
+		success = databaseSetup.firstRun(systemConf)
+		if success:
+			print "Successfully created database and tables."
+		else:
+			print "Something went wrong creating the database or tables, MovServer can not continue :("
+			return
+
+	#Perform different actions based on the argument flag
+	if args.scan:
 		scanTorrents.main()
-	elif argument == 'r':
-		systemConf = settingsManager.systemSettings()
+	elif args.reset:
 		databaseSetup.resetTables(systemConf)
 		databaseSetup.createTables(systemConf)
-	elif argument == 'b':
-		generateBackdrops.main()
-	elif argument == None:
-		scanTorrents.main()
-	else:
-		print 'There was an issue starting movServer'
-		
+	elif args.web:
+		bottle.run(host = '192.168.0.109', port = 9000)
+	
 main()

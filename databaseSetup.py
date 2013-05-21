@@ -83,10 +83,17 @@ def createTables(settings):
 		return False
 	return True
 
+#Try to connect to the database to determine if it is created or not
+def databaseExists(settings):
+	try:
+		mdb.connect(settings.mysqlServer, settings.mysqlUser, settings.mysqlPassword, 'movServer')
+		return True
+	except:
+		return False
+
 #Do first time setup
 def firstRun(settings):
 	db = createDatabase(settings)
-	resetTables(settings)
 	tables = createTables(settings)
 	if db and tables:
 		return True
