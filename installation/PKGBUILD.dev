@@ -38,7 +38,5 @@ build() {
 	install -d $_binpath
 	ln -s /usr/share/movserver/movserver $_binpath/movserver
 
-	#Install some python modules
-	pip2 install tvdb_api
-	echo 'Please install tmdb3 from the the git repo.'
+	echo 'Please install tmdb3 and tvdb_api python modules before trying to run MovServer.'
 }

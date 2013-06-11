@@ -1,10 +1,13 @@
 import string
 import MySQLdb as mdb
+import helpers.settingsManager as settingsManager
+
+sysSettings = settingsManager.systemSettings()
 
 #Create database
-def createDatabase(settings):
+def createDatabase():
 	try:
-		conn = mdb.connect(settings.mysqlServer, settings.mysqlUser, settings.mysqlPassword)
+		conn = mdb.connect(sysSettings.mysqlServer, sysSettings.mysqlUser, sysSettings.mysqlPassword)
 		cursor = conn.cursor()
 		cursor.execute('CREATE DATABASE IF NOT EXISTS movServer')
 		conn.close()
@@ -13,9 +16,9 @@ def createDatabase(settings):
 	return True
 
 #Drop all tables if reset flag is passed
-def resetTables(settings):
+def resetTables():
 	try:
-		conn = mdb.connect(settings.mysqlServer, settings.mysqlUser, settings.mysqlPassword, 'movServer')
+		conn = mdb.connect(sysSettings.mysqlServer, sysSettings.mysqlUser, sysSettings.mysqlPassword, 'movServer')
 		cursor = conn.cursor()
 		cursor.execute('DROP TABLE IF EXISTS Series')
 		cursor.execute('DROP TABLE IF EXISTS SeriesAlias')
@@ -27,9 +30,9 @@ def resetTables(settings):
 		return False
 
 #Create tables
-def createTables(settings):
+def createTables():
 	try:
-		conn = mdb.connect(settings.mysqlServer, settings.mysqlUser, settings.mysqlPassword, 'movServer')
+		conn = mdb.connect(sysSettings.mysqlServer, sysSettings.mysqlUser, sysSettings.mysqlPassword, 'movServer')
 		cursor = conn.cursor()
 		cursor.execute('''
 			CREATE TABLE IF NOT EXISTS Series
@@ -84,17 +87,17 @@ def createTables(settings):
 	return True
 
 #Try to connect to the database to determine if it is created or not
-def databaseExists(settings):
+def databaseExists():
 	try:
-		mdb.connect(settings.mysqlServer, settings.mysqlUser, settings.mysqlPassword, 'movServer')
+		mdb.connect(sysSettings.mysqlServer, sysSettings.mysqlUser, sysSettings.mysqlPassword, 'movServer')
 		return True
 	except:
 		return False
 
 #Do first time setup
-def firstRun(settings):
-	db = createDatabase(settings)
-	tables = createTables(settings)
+def firstRun():
+	db = createDatabase()
+	tables = createTables()
 	if db and tables:
 		return True
 	else:

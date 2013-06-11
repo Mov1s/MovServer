@@ -12,15 +12,15 @@ parser.add_argument('-r, --reset', dest = 'reset', action = 'store_true', help =
 parser.add_argument('-w, --web', dest = 'web', action = 'store_true', help = 'runs the REST API for interacting with your scanned library')
 args = parser.parse_args()
 
-#Get the system configuration
-systemConf = settingsManager.systemSettings()
+#Get the system settings
+sysSettings = settingsManager.systemSettings()
 
 #Main program execution 
 def main():
 	#Install on the first run
-	if not databaseSetup.databaseExists(systemConf):
+	if not databaseSetup.databaseExists():
 		print "Creating database tables for first run..."
-		success = databaseSetup.firstRun(systemConf)
+		success = databaseSetup.firstRun()
 		if success:
 			print "Successfully created database and tables."
 		else:
@@ -31,9 +31,9 @@ def main():
 	if args.scan:
 		scanTorrents.main()
 	elif args.reset:
-		databaseSetup.resetTables(systemConf)
-		databaseSetup.createTables(systemConf)
+		databaseSetup.resetTables()
+		databaseSetup.createTables()
 	elif args.web:
-		bottle.run(host = '192.168.0.109', port = 9000)
+		bottle.run(host = sysSettings.apiListenIp, port = sysSettings.apiListenPort)
 	
 main()
