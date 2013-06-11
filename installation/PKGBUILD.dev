@@ -12,7 +12,7 @@ replaces=()
 arch=('i686' 'x86_64')
 url=""
 license=('other')
-depends=('python2' 'mysql' 'mysql-python' 'python2-pip' 'python-imaging')
+depends=('python2' 'mysql' 'mysql-python' 'python2-pip' 'python-imaging' 'python2-bottle')
 makedepends=('git')
 
 optdepends=()
@@ -40,5 +40,5 @@ build() {
 
 	#Install some python modules
 	pip2 install tvdb_api
-	pip2 install tmdb3
+	echo 'Please install tmdb3 from the the git repo.'
 }
