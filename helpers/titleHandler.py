@@ -128,10 +128,7 @@ def percentageOfTitleMatch(firstTitle, secondTitle):
 			matchingWordCount += 1
 			secondArray.remove(word)
 
-	# print firstTitle, ' ', secondTitle
-	# print '\t({0} / {1})*({2} / {3})'.format(matchingWordCount, lengthOfFirstTitle, matchingWordCount, lengthOfSecondTitle)
+	#Calculate the percentage of title match
 	percentFirstMatch = float(matchingWordCount) / lengthOfFirstTitle
 	percentSecondMatch = float(matchingWordCount) / lengthOfSecondTitle
-	# print '\t', str(percentFirstMatch * percentSecondMatch)
-	#Return the percentage of matching words between the two titles
 	return percentFirstMatch * percentSecondMatch

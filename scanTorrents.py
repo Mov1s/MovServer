@@ -6,9 +6,12 @@ import models.series as series
 import models.seriesAlias as seriesAlias
 import models.episode as episode
 import models.mediaFile as mediaFile
+import helpers.mediaApiRepo as mediaApiRepo
 import helpers.mediaLinker as mediaLinker
 import helpers.mysqlConnector as mySql
 import helpers.settingsManager as settingsManager
+import helpers.xbmcNotifier as xbmcNotifier
+from helpers.mediaFileChecker import *
 
 def main():
 	systemConf = settingsManager.systemSettings()
@@ -20,7 +23,7 @@ def main():
 		for file in files:
 			fullPath = os.path.join(root, file)
 			if isNewTvEpisode(file, root, conn):
-				tvShowInfo = getSeries(file)
+				tvShowInfo = parseFileIntoEpisodeInfo(file)
 				newMediaFile = mediaFile.createWithPath(fullPath).save(conn)
 				anEpisode = episode.create(tvShowInfo[1], tvShowInfo[2])
 				aSeriesAlias = seriesAlias.getBySeriesAliasString(tvShowInfo[0], conn)
@@ -28,7 +31,7 @@ def main():
 				if aSeriesAlias == None:
 					aSeriesAlias = seriesAlias.create(tvShowInfo[0]).save(conn)
 					anEpisode = mediaLinker.associateEpisodeWithSeriesAlias(anEpisode, aSeriesAlias)
-					seriesArray = findImdbSeriesLikeTitle(file)
+					seriesArray = mediaApiRepo.findSeriesLikeTitle(file)
 					if len(seriesArray) > 0:
 						mediaLinker.associateArrayOfSeriesWithSeriesAlias(seriesArray, aSeriesAlias)
 						episodeName = mediaLinker.linkMediaFileToSeries(newMediaFile, seriesArray[0])
@@ -48,9 +51,9 @@ def main():
 				#if so then do the search based on folder name instead of file name
 				if len(root) > len(dirConf.contentSource):
 					folderTitle = os.path.basename(root)
-					movies = findImdbMoviesLikeTitle(folderTitle)
+					movies = mediaApiRepo.findMoviesLikeTitle(folderTitle)
 				else:
-					movies = findImdbMoviesLikeTitle(file)
+					movies = mediaApiRepo.findMoviesLikeTitle(file)
 
 				if len(movies) > 0:
 					mediaLinker.associateArrayOfMoviesWithMediaFile(movies, newMediaFile, conn)
@@ -62,53 +65,8 @@ def main():
 
 	conn.close()
 	if len(addedContent) == 1:
-		sendXbmcNotification("New Content", addedContent[0]+" was added to the library.")
-		sendXbmcLibraryUpdate()
+		xbmcNotifier.sendXbmcNotification("New Content", addedContent[0]+" was added to the library.")
+		xbmcNotifier.sendXbmcLibraryUpdate()
 	elif len(addedContent) > 1:
-		sendXbmcNotification("New Content", str(len(addedContent))+" new items were added to the library.")
-		sendXbmcLibraryUpdate()
-
-#Helpers for checking media type ------------------------------------------------
-#--------------------------------------------------------------------------------
-def isNewTvEpisode(file, root, conn = None):
-	fullPath = os.path.join(root, file)
-	isVideo = fileIsVideo(fullPath)
-	isNewMediaFile = (mediaFile.getByFilePath(fullPath, conn) == None)
-	isTvEpisode = (getSeries(file) != None)
-	isOfEpisodeSize = fileIsOfEpisodeSize(fullPath)
-	return isVideo and isNewMediaFile and isTvEpisode and isOfEpisodeSize
-
-def isNewMovie(file, root, conn = None):
-	fullPath = os.path.join(root, file)
-	isVideo = fileIsVideo(fullPath)
-	isNewMediaFile = (mediaFile.getByFilePath(fullPath, conn) == None)
-	isNotTvEpisode = (getSeries(file) == None)
-	isOfMovieSize = fileIsOfMovieSize(fullPath)
-	return isVideo and isNewMediaFile and isNotTvEpisode and isOfMovieSize
-
-def fileIsVideo(fileName):
-	result = False
-	extension = fileName[string.rfind(fileName, '.'):]
-	if extension == '.mkv':
-		result = True
-	elif extension == '.avi':
-		result = True
-	elif extension == '.mp4':
-		result = True
-	elif extension == '.ogm':
-		result = True
-	return result
-
-def fileIsOfMovieSize(fileName):
-	#return True
-	result = False
-	if os.path.getsize(fileName) >= 629145600:
-		result = True
-	return result
-
-def fileIsOfEpisodeSize(fileName):
-	#return True
-	result = False
-	if os.path.getsize(fileName) >= 104857600:
-		result = True
-	return result
+		xbmcNotifier.sendXbmcNotification("New Content", str(len(addedContent))+" new items were added to the library.")
+		xbmcNotifier.sendXbmcLibraryUpdate()
