@@ -106,7 +106,7 @@ def getLibrarySeries():
 def getLibrarySeries(seriesId):
 	aSeries = series.getBySeriesId(seriesId)
 	jsonReturn = {}
-	seriesArray = [aSeries]
+	seriesArray = [aSeries.asJson()]
 	jsonReturn['series'] = seriesArray
 	return jsonReturn
 
