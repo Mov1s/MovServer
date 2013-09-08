@@ -41,9 +41,12 @@ def main():
 				else:
 					anEpisode = mediaLinker.associateEpisodeWithSeriesAlias(anEpisode, aSeriesAlias)
 					aSeries = series.getActiveBySeriesAliasId(aSeriesAlias.id, conn)
-					episodeName = mediaLinker.linkMediaFileToSeries(newMediaFile, aSeries)
-					addedContent.append(episodeName)
-					print file, '  ->  ', episodeName
+					if aSeries:
+						episodeName = mediaLinker.linkMediaFileToSeries(newMediaFile, aSeries)
+						addedContent.append(episodeName)
+						print file, '  ->  ', episodeName
+					else:
+						print "\t", "No series for " + file
 			elif isNewMovie(file, root, conn):
 				newMediaFile = mediaFile.createWithPath(fullPath).save(conn)
 				#Check to see if the movie is in a sub folder
