@@ -97,8 +97,14 @@ def resolveTies(percentageMatchedMovieArray, originalFileName):
       thisMovie = percentageMatchedMovieArray[i]
       nextMovie = percentageMatchedMovieArray[i+1]
       tiedMovies.append(thisMovie)
+
+      #Break if the next movie has a different match percentage
       if thisMovie[0] != nextMovie[0]:
         break
+      #If the last element has the same match percentage add it too
+      elif i+1 == len(percentageMatchedMovieArray) - 1:
+        tiedMovies.append(nextMovie)
+
   reorderedMovies = list(tiedMovies)
   for m in tiedMovies:
     if(str(m[1].year) in originalFileName):

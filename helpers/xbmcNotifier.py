@@ -7,7 +7,7 @@ def sendXbmcNotification(title, message):
 	message = string.replace(message, ' ', '%20')
 	try:
 		settings = settingsManager.systemSettings()
-		conn = httplib.HTTPConnection('localhost', settings.xbmcPort, timeout=1)
+		conn = httplib.HTTPConnection(settings.xbmcIp, settings.xbmcPort, timeout=1)
 		conn.connect()
 		conn.request('GET', '/xbmcCmds/xbmcHttp?command=ExecBuiltIn(Notification('+title+','+message+'))')
 		r = conn.getresponse()
@@ -18,7 +18,7 @@ def sendXbmcNotification(title, message):
 def sendXbmcLibraryUpdate():
 	try:
 		settings = settingsManager.systemSettings()
-		conn = httplib.HTTPConnection('localhost', settings.xbmcPort, timeout=1)
+		conn = httplib.HTTPConnection(settings.xbmcIp, settings.xbmcPort, timeout=1)
 		conn.connect()
 		conn.request('GET', '/xbmcCmds/xbmcHttp?command=ExecBuiltIn(UpdateLibrary(video))')
 		r = conn.getresponse()
