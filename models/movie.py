@@ -22,16 +22,16 @@ class movie():
 		#New Movie
 		if self.id == None and self.title != None and self.associatedMediaFileId != None:
 			try:
-				cursor.execute("INSERT INTO Movies (title, year, posterUrl, summary, rating, active, FK_MediaFile_id) VALUES (%s, %s, %s, %s, %s, %s, %s)", (self.title, self.year, self.posterUrl, self.summary, self.rating, self.active, self.associatedMediaFileId))
+				cursor.execute("INSERT INTO Movies (title, year, posterUrl, summary, rating, active, FK_MediaFile_id) VALUES (%s, %s, %s, %s, %s, %s, %s)", (self.title, self.year, self.posterUrl, self.summary, self.rating, self.active, self.associatedMediaFileId,))
 				conn.commit()
-				cursor.execute("SELECT id FROM Movies WHERE title = %s AND FK_MediaFile_id = %s", (self.title, self.associatedMediaFileId))
+				cursor.execute("SELECT id FROM Movies WHERE title = %s AND FK_MediaFile_id = %s", (self.title, self.associatedMediaFileId,))
 				result = cursor.fetchall()
 				self.id = result[0][0]
 			except UnicodeEncodeError:
 				print "Unicode error"
 		#Update existing movie
 		elif self.id != None and self.title != None and self.associatedMediaFileId != None:
-			cursor.execute("UPDATE Movies SET title = %s, year = %s, posterUrl = %s, summary = %s, rating = %s, active = %s, FK_MediaFile_id = %s WHERE id = %s", (self.title, self.year, self.posterUrl, self.summary, self.rating, self.active, self.associatedMediaFileId, self.id))
+			cursor.execute("UPDATE Movies SET title = %s, year = %s, posterUrl = %s, summary = %s, rating = %s, active = %s, FK_MediaFile_id = %s WHERE id = %s", (self.title, self.year, self.posterUrl, self.summary, self.rating, self.active, self.associatedMediaFileId, self.id,))
 			conn.commit()
 
 		return self
@@ -56,7 +56,7 @@ def getByMediaFilePath(mediaFilePath, conn = None):
 		conn = mySql.createConnection()
 	cursor = conn.cursor()
 
-	cursor.execute("SELECT m FROM MediaFiles mf LEFT JOIN Movies m ON mf.id = m.FK_MediaFile_id WHERE mf.path = %s", (mediaFilePath))
+	cursor.execute("SELECT m FROM MediaFiles mf LEFT JOIN Movies m ON mf.id = m.FK_MediaFile_id WHERE mf.path = %s", (mediaFilePath,))
 	if cursor.rowcount == 0:
 		return []
 	else:
@@ -74,7 +74,7 @@ def getByMediaFileId(mediaFileId, conn = None):
 		conn = mySql.createConnection()
 	cursor = conn.cursor()
 
-	cursor.execute("SELECT * FROM Movies m WHERE m.FK_MediaFile_id = %s", (mediaFileId))
+	cursor.execute("SELECT * FROM Movies m WHERE m.FK_MediaFile_id = %s", (mediaFileId,))
 	if cursor.rowcount == 0:
 		return []
 	else:
@@ -92,7 +92,7 @@ def getByMovieId(movieId, conn = None):
 		conn = mySql.createConnection()
 	cursor = conn.cursor()
 
-	cursor.execute("SELECT * FROM Movies m WHERE m.id = %s", (movieId))
+	cursor.execute("SELECT * FROM Movies m WHERE m.id = %s", (movieId,))
 	if cursor.rowcount == 0:
 		return None
 	else:
@@ -125,11 +125,11 @@ def getSibblingsOfMovieId(movieId, conn = None):
 		conn = mySql.createConnection()
 	cursor = conn.cursor()
 
-	cursor.execute("SELECT * FROM Movies m WHERE m.id = %s", (movieId))
+	cursor.execute("SELECT * FROM Movies m WHERE m.id = %s", (movieId,))
 	lookupMovieInfo = cursor.fetchall()[0]
 	lookupMovie = createFromArray(lookupMovieInfo)
 
-	cursor.execute("SELECT * FROM Movies m WHERE m.FK_MediaFile_id = %s", (lookupMovie.associatedMediaFileId))
+	cursor.execute("SELECT * FROM Movies m WHERE m.FK_MediaFile_id = %s", (lookupMovie.associatedMediaFileId,))
 	if cursor.rowcount == 0:
 		return []
 	else:

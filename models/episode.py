@@ -19,16 +19,16 @@ class episode():
 		#New Episode
 		if self.id == None and self.season != None and self.episode != None and self.associatedMediaFileId != None:
 			try:
-				cursor.execute("INSERT INTO Episodes (season, episode, FK_SeriesAlias_id, FK_MediaFile_id) VALUES (%s, %s, %s, %s)", (self.season, self.episode, self.associatedSeriesAliasId, self.associatedMediaFileId))
+				cursor.execute("INSERT INTO Episodes (season, episode, FK_SeriesAlias_id, FK_MediaFile_id) VALUES (%s, %s, %s, %s)", (self.season, self.episode, self.associatedSeriesAliasId, self.associatedMediaFileId,))
 				conn.commit()
-				cursor.execute("SELECT id FROM Episodes WHERE FK_MediaFile_id = %s", (self.associatedMediaFileId))
+				cursor.execute("SELECT id FROM Episodes WHERE FK_MediaFile_id = %s", (self.associatedMediaFileId,))
 				result = cursor.fetchall()
 				self.id = result[0][0]
 			except UnicodeEncodeError:
 				print "Unicode error"
 		#Update existing episode
 		elif self.id != None and self.season != None and self.episode != None and self.associatedMediaFileId != None:
-			cursor.execute("UPDATE Episodes SET season = %s, episode = %s, FK_SeriesAlias_id = %s, FK_MediaFile_id = %s WHERE id = %s", (self.season, self.episode, self.associatedSeriesAliasId, self.associatedMediaFileId, self.id))
+			cursor.execute("UPDATE Episodes SET season = %s, episode = %s, FK_SeriesAlias_id = %s, FK_MediaFile_id = %s WHERE id = %s", (self.season, self.episode, self.associatedSeriesAliasId, self.associatedMediaFileId, self.id,))
 			conn.commit()
 
 		return self
@@ -41,7 +41,7 @@ def getByEpisodeId(episodeId, conn = None):
 		conn = mySql.createConnection()
 	cursor = conn.cursor()
 
-	cursor.execute("SELECT * FROM Episodes WHERE id = %s", (episodeId))
+	cursor.execute("SELECT * FROM Episodes WHERE id = %s", (episodeId,))
 	if cursor.rowcount == 0:
 		return None
 	else:
@@ -57,7 +57,7 @@ def getByMediaFileId(mediaFileId, conn = None):
 		conn = mySql.createConnection()
 	cursor = conn.cursor()
 
-	cursor.execute("SELECT * FROM Episodes WHERE FK_MediaFile_id = %s", (mediaFileId))
+	cursor.execute("SELECT * FROM Episodes WHERE FK_MediaFile_id = %s", (mediaFileId,))
 	if cursor.rowcount == 0:
 		return None
 	else:
@@ -73,7 +73,7 @@ def getBySeriesAliasId(seriesAliasId, conn = None):
 		conn = mySql.createConnection()
 	cursor = conn.cursor()
 
-	cursor.execute("SELECT * FROM Episodes WHERE FK_SeriesAlias_id = %s", (seriesAliasId))
+	cursor.execute("SELECT * FROM Episodes WHERE FK_SeriesAlias_id = %s", (seriesAliasId,))
 	if cursor.rowcount == 0:
 		return []
 	else:
