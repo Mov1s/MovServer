@@ -15,8 +15,8 @@ def associateMovieWithMediaFile(aMovie, aMediaFile, conn = None):
   cursor = conn.cursor()
 
   aMovie.associatedMediaFileId = aMediaFile.id
-  aMovie.save(conn) 
-  return aMovie 
+  aMovie.save(conn)
+  return aMovie
 
 def associateArrayOfMoviesWithMediaFile(aMovieArray, aMediaFile, conn = None):
   if conn == None:
@@ -130,6 +130,37 @@ def linkMediaFileToSeries(aMediaFile, aSeries, conn = None):
 
   return episodeFileName
 
+#Housekeeping functions ----------------------------------------------------------
+#--------------------------------------------------------------------------------
+def removeMediaFile(aMediaFile, conn = None):
+    if conn == None:
+      conn = mySql.createConnection()
+
+    #Get linked media that will need to be deleted
+    anEpisode = episode.getByMediaFileId(aMediaFile.id, conn)
+    aMovieArray = movie.getByMediaFileId(aMediaFile.id, conn)
+
+    #Delete the existing linked file if there is one
+    if aMediaFile.linkedPath != None:
+        removeHardLinkForMediaFile(aMediaFile)
+
+    #Clean up after an episode
+    if anEpisode != None:
+        anEpisode.delete(conn)
+
+        #Clean up series and season folders
+        removeSeasonFolderIfEmptyForMediaFile(aMediaFile)
+        removeSeriesFolderIfEmptyForMediaFile(aMediaFile)
+
+    #Clean up after a movie
+    for m in aMovieArray:
+        m.delete(conn)
+
+    #Remove the media file
+    aMediaFile.delete(conn)
+
+#File system functions ----------------------------------------------------------
+#--------------------------------------------------------------------------------
 def removeHardLinkForMediaFile(aMediaFile):
   if aMediaFile.linkedPath != None:
     moviePath = aMediaFile.linkedPath

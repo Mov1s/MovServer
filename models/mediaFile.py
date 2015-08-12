@@ -29,6 +29,17 @@ class mediaFile():
 
 		return self
 
+	def delete(self, conn = None):
+		if conn == None:
+			conn = mySql.createConnection()
+		cursor = conn.cursor()
+
+		#Delete Media File
+		cursor.execute("DELETE FROM MediaFiles WHERE id = %s", (self.id,))
+		conn.commit()
+
+		return self
+
 	def asJson(self):
 		jsonResult = {}
 		jsonResult['id'] = self.id

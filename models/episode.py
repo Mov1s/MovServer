@@ -33,6 +33,17 @@ class episode():
 
 		return self
 
+	def delete(self, conn = None):
+		if conn == None:
+			conn = mySql.createConnection()
+		cursor = conn.cursor()
+
+		#Delete Episode
+		cursor.execute("DELETE FROM Episodes WHERE id = %s", (self.id,))
+		conn.commit()
+
+		return self
+
 #Returns a tv episode that has the given id
 #episodeId: the episode id in question
 #conn: the connection to use for the database query, if none provided a default is created
