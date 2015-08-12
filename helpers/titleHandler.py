@@ -1,4 +1,5 @@
 import re, string
+import helpers.settingsManager as settingsManager
 
 #String level formating functions -----------------------------------------------
 #--------------------------------------------------------------------------------
@@ -18,9 +19,9 @@ def replaceAbbreviations(title):
   return title
 
 def removeBlacklistedWords(title):
-  title = title.replace('demonoid.me', '')
-  title = title.replace('avchd', '')
-  title = title.replace('++demonoid.me++', '')
+  options = settingsManager.mediaFileSettings()
+  for word in options.blackListedWords:
+  	title = title.replace(word, '')
   return title
 
 def returnWellFormatedArrayFromTitle(title):
@@ -53,7 +54,7 @@ def orderMovieArrayByMatchingTitle(movieArray, title, originalFileName):
   sortedMovies = []
   for m in movieArray:
     pMatch = percentageOfTitleMatch(m.title, title)
-    sortedMovies.append([pMatch, m])  
+    sortedMovies.append([pMatch, m])
   sortedMovies.sort(reverse=True)
   sortedMovies = resolveTies(sortedMovies, originalFileName)
 
@@ -85,7 +86,7 @@ def printPercentageArray(percentageMatchedMovieArray, sortedPercentageMatchedMov
     sf = movieFormat.format(round(s[0], 2), s[1].title, s[1].year)
     rof = movieFormat.format(round(ro[0], 2), ro[1].title, ro[1].year)
 
-    print usf, ' ' * (50 - len(usf)), sf, ' ' * (50 - len(sf)), rof 
+    print usf, ' ' * (50 - len(usf)), sf, ' ' * (50 - len(sf)), rof
 
 #Ranking algorithm functions ----------------------------------------------------
 #--------------------------------------------------------------------------------

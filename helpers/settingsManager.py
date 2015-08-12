@@ -30,3 +30,10 @@ class systemSettings():
 		self.tmdbApiKey = config.get('System', 'tmdbApiKey')
 		self.apiListenIp = config.get('System', 'apiListenIp')
 		self.apiListenPort = int(config.get('System', 'apiListenPort'))
+
+#Class for holding media file settings governing the treatment of found media files
+class mediaFileSettings():
+
+	def __init__(self):
+		wordsString = config.get('MediaFileOptions', 'blackListedWords')
+		self.blackListedWords = map(lambda x: x.strip(), wordsString.split(',')) if wordsString != None else []
