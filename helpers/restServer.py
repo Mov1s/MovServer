@@ -20,6 +20,12 @@ def getMediaFiles():
 	jsonReturn['mediaFiles'] = mediaFileArray
 	return jsonReturn
 
+@route('/mediafiles/<mediaFileId>', method='DELETE')
+def deleteMediaFile(mediaFileId):
+	requestedMediaFile = mediaFile.getByMediaFileId(mediaFileId)
+	mediaLinker.removeMediaFile(requestedMediaFile)
+	return "Successfully Deleted Media File"
+
 #Movie Routes -------------------------------------------------------------------
 #--------------------------------------------------------------------------------
 @route('/library/movies', method='GET')

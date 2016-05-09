@@ -15,17 +15,28 @@ class mediaFile():
 		#New Media File
 		if self.id == None and self.path != None:
 			try:
-				cursor.execute("INSERT INTO MediaFiles (path, linkedPath) VALUES (%s, %s)", (self.path, self.linkedPath))
+				cursor.execute("INSERT INTO MediaFiles (path, linkedPath) VALUES (%s, %s)", (self.path, self.linkedPath,))
 				conn.commit()
-				cursor.execute("SELECT id FROM MediaFiles WHERE path = %s", (self.path))
+				cursor.execute("SELECT id FROM MediaFiles WHERE path = %s", (self.path,))
 				result = cursor.fetchall()
 				self.id = result[0][0]
 			except UnicodeEncodeError:
 				print "Unicode error"
 		#Update existing movie
 		elif self.id != None and self.path != None:
-			cursor.execute("UPDATE MediaFiles SET path = %s, linkedPath = %s WHERE id = %s", (self.path, self.linkedPath, self.id))
+			cursor.execute("UPDATE MediaFiles SET path = %s, linkedPath = %s WHERE id = %s", (self.path, self.linkedPath, self.id,))
 			conn.commit()
+
+		return self
+
+	def delete(self, conn = None):
+		if conn == None:
+			conn = mySql.createConnection()
+		cursor = conn.cursor()
+
+		#Delete Media File
+		cursor.execute("DELETE FROM MediaFiles WHERE id = %s", (self.id,))
+		conn.commit()
 
 		return self
 
@@ -44,7 +55,7 @@ def getByFilePath(path, conn = None):
 		conn = mySql.createConnection()
 	cursor = conn.cursor()
 
-	cursor.execute("SELECT * FROM MediaFiles mf WHERE mf.path = %s", (path))
+	cursor.execute("SELECT * FROM MediaFiles mf WHERE mf.path = %s", (path,))
 	if cursor.rowcount == 0:
 		return None
 	else:
@@ -60,7 +71,7 @@ def getByMediaFileId(mediaFileId, conn = None):
 		conn = mySql.createConnection()
 	cursor = conn.cursor()
 
-	cursor.execute("SELECT * FROM MediaFiles mf WHERE mf.id = %s", (mediaFileId))
+	cursor.execute("SELECT * FROM MediaFiles mf WHERE mf.id = %s", (mediaFileId,))
 	if cursor.rowcount == 0:
 		return None
 	else:

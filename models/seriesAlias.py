@@ -14,16 +14,16 @@ class seriesAlias():
 		#New series alias
 		if self.id == None and self.string != None:
 			try:
-				cursor.execute("INSERT INTO SeriesAlias (string) VALUES (%s)", (self.string))
+				cursor.execute("INSERT INTO SeriesAlias (string) VALUES (%s)", (self.string,))
 				conn.commit()
-				cursor.execute("SELECT id FROM SeriesAlias WHERE string = %s", (self.string))
+				cursor.execute("SELECT id FROM SeriesAlias WHERE string = %s", (self.string,))
 				result = cursor.fetchall()
 				self.id = result[0][0]
 			except UnicodeEncodeError:
 				print "Unicode error"
 		#Update existing series alias
 		elif self.id != None and self.string != None:
-			cursor.execute("UPDATE SeriesAlias SET string = %s WHERE id = %s", (self.string, self.id))
+			cursor.execute("UPDATE SeriesAlias SET string = %s WHERE id = %s", (self.string, self.id,))
 			conn.commit()
 
 		return self
@@ -42,7 +42,7 @@ def getBySeriesAliasId(seriesAliasId, conn = None):
 		conn = mySql.createConnection()
 	cursor = conn.cursor()
 
-	cursor.execute("SELECT * FROM SeriesAlias WHERE id = %s", (seriesAliasId))
+	cursor.execute("SELECT * FROM SeriesAlias WHERE id = %s", (seriesAliasId,))
 	if cursor.rowcount == 0:
 		return None
 	else:
@@ -58,7 +58,7 @@ def getBySeriesAliasString(seriesAliasString, conn = None):
 		conn = mySql.createConnection()
 	cursor = conn.cursor()
 
-	cursor.execute("SELECT * FROM SeriesAlias WHERE string = %s", (seriesAliasString))
+	cursor.execute("SELECT * FROM SeriesAlias WHERE string = %s", (seriesAliasString,))
 	if cursor.rowcount == 0:
 		return None
 	else:
